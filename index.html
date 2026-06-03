@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>DV2 - Malaysia E&E Exports</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css">
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f9f9f9;
+    }
+
+    .content-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: white;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .chart-box {
+      margin-top: 20px;
+      margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .story-text {
+      line-height: 1.6;
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .metadata {
+      font-size: 0.85em;
+      color: #777;
+      margin-top: 50px;
+      border-top: 1px solid #eee;
+      padding-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="content-container">
+    <h1>Malaysia's Silicon Valley: Semiconductor and Electronics Exports</h1>
+
+    <p class="story-text">
+      An interactive exploration of Malaysia's Electrical and Electronics (E&E) export trends.
+      This visualisation highlights the rapid growth and crucial role of the semiconductor
+      industry within the national economy and the global technology supply chain.
+    </p>
+
+    <div id="vis-trend" class="chart-box"></div>
+
+    <div class="metadata">
+      <p>Author: Yuan Qian (Student ID: 35507292)</p>
+      <p>Date: May 2026</p>
+      <p>Data Source: Department of Statistics Malaysia (DOSM)</p>
+    </div>
+  </div>
+
+  <script>
+    var specTrend = "trend.json";
+    vegaEmbed('#vis-trend', specTrend).catch(console.error);
+  </script>
+
+</body>
+
+</html>
