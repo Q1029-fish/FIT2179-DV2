@@ -10,7 +10,6 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap"
     rel="stylesheet">
-
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css">
 
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
@@ -26,13 +25,23 @@
       padding: 0;
     }
 
+    /* 加宽容器以适应左右双列排版 */
     .content-container {
-      max-width: 960px;
+      max-width: 1200px;
       margin: 50px auto;
       padding: 60px 80px;
       background: #ffffff;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
       border-radius: 12px;
+    }
+
+    /* 核心网格系统：左右各占 50%，中间留 40px 空隙 */
+    .grid-2-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 40px;
+      margin-bottom: 40px;
     }
 
     h1,
@@ -48,30 +57,35 @@
       text-align: center;
       margin-bottom: 20px;
       letter-spacing: -1px;
-      line-height: 1.2;
     }
 
     h2 {
       font-size: 1.6rem;
       font-weight: 600;
-      margin-top: 80px;
+      margin-top: 60px;
       border-bottom: 2px solid #f0f0f0;
       padding-bottom: 12px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
+    }
+
+    /* 网格里面的 H2 不需要过多的上方间距 */
+    .grid-2-col h2 {
+      margin-top: 0;
     }
 
     .story-text {
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       line-height: 1.8;
       color: #4a4a52;
-      margin-bottom: 35px;
+      margin-bottom: 25px;
     }
 
+    /* 确保图表容器占满自己所在的格子 */
     .chart-box {
-      margin-top: 30px;
-      margin-bottom: 60px;
+      width: 100%;
       display: flex;
       justify-content: center;
+      margin-bottom: 40px;
     }
 
     .source-section {
@@ -100,6 +114,7 @@
   <div class="content-container">
     <h1 style="text-align: center;">Malaysia's Silicon Valley: Semiconductor Exports</h1>
 
+    <!-- 单列区：趋势与地图 -->
     <h2>1. The National Growth Trend</h2>
     <p class="story-text">This chart shows the rapid growth of E&E exports over the last few years.</p>
     <div id="vis-trend" class="chart-box"></div>
@@ -108,57 +123,70 @@
     <p class="story-text">Hover over the states to reveal the dominance of regions like Penang and Selangor.</p>
     <div id="vis-map" class="chart-box"></div>
 
-    <h2>3. Global Tech Supply Chain: Top Buyers</h2>
-    <p class="story-text">Who relies on Malaysia's chips? This chart reveals the top 10 export destinations,
-      highlighting Malaysia's crucial role in fulfilling the demands of tech giants in Singapore, the US, and China.</p>
-    <div id="vis-bar" class="chart-box"></div>
+    <!-- 双列并排区 A：国家排名 vs 产品占比 -->
+    <div class="grid-2-col">
+      <div>
+        <h2>3. Top Buyers</h2>
+        <p class="story-text">Who relies on Malaysia's chips? Top 10 export destinations.</p>
+        <div id="vis-bar" class="chart-box"></div>
+      </div>
+      <div>
+        <h2>4. Export Categories</h2>
+        <p class="story-text">The true engine is raw semiconductor components (Chips).</p>
+        <div id="vis-donut" class="chart-box"></div>
+      </div>
+    </div>
 
-    <h2>4. What Exactly Are We Exporting?</h2>
-    <p class="story-text">While E&E is a broad category, the true engine of Malaysia's export economy is raw
-      semiconductor components, specifically Integrated Circuits (Chips).</p>
-    <div id="vis-donut" class="chart-box"></div>
-
+    <!-- 单列区：气泡图 -->
     <h2>5. The Trade Balance: Imports vs. Exports</h2>
-    <p class="story-text">A healthy tech ecosystem requires both buying and selling. This bubble chart plots our major
-      partners. Countries plotted higher on the Y-axis represent strong export destinations, while the size of the
-      bubble indicates the total trade volume.</p>
+    <p class="story-text">Countries plotted higher on the Y-axis represent strong export destinations, while bubble size
+      indicates total trade.</p>
     <div id="vis-bubble" class="chart-box"></div>
 
-    <h2>6. Growth Pillars: Product Category Trends</h2>
-    <p class="story-text">Tracking the growth of different sub-sectors over time reveals that Integrated Circuits remain
-      the uncontested pioneer driving Malaysia's export boom, outstripping other electronic components significantly.
-    </p>
-    <div id="vis-line" class="chart-box"></div>
+    <!-- 双列并排区 B：产品趋势 vs 市场份额 -->
+    <div class="grid-2-col">
+      <div>
+        <h2>6. Category Trends</h2>
+        <p class="story-text">Integrated Circuits remain the uncontested pioneer driving the boom.</p>
+        <div id="vis-line" class="chart-box"></div>
+      </div>
+      <div>
+        <h2>7. Market Share</h2>
+        <p class="story-text">Relative market share of our top 3 trading partners over time.</p>
+        <div id="vis-stacked" class="chart-box"></div>
+      </div>
+    </div>
 
-    <h2>7. Shifting Alliances: Top Buyers' Market Share</h2>
-    <p class="story-text">By normalizing the export volumes to 100%, we can analyze the relative market share of our top
-      3 trading partners. This reveals subtle shifts in supply chain reliance over the past five years.</p>
-    <div id="vis-stacked" class="chart-box"></div>
-
+    <!-- 单列区：剩余高级图表 -->
     <h2>8. Seasonal Surges: When Does Export Peak?</h2>
-    <p class="story-text">Is there a seasonal pattern to the semiconductor trade? This heatmap visualizes export
-      intensity by month and year. Notice the consistent darkening of colors towards the end of each year, likely driven
-      by global consumer electronics manufacturing cycles ahead of holiday seasons.</p>
+    <p class="story-text">Notice the consistent darkening of colors towards the end of each year.</p>
     <div id="vis-heatmap" class="chart-box"></div>
 
-    <h2>9. The Rise of the Titans: Top 4 States Trajectory</h2>
-    <p class="story-text">Instead of cluttering a single chart, these "small multiples" separate the growth trajectories
-      of Malaysia's top 4 tech hubs. While Penang and Johor show aggressive exponential growth, Kedah is emerging as a
-      steady new player.</p>
+    <h2>9. The Rise of the Titans: Top 4 States</h2>
+    <p class="story-text">Separating the growth trajectories of Malaysia's top 4 tech hubs.</p>
     <div id="vis-facet" class="chart-box"></div>
 
-    <h2>10. Interactive Dashboard: Deep Dive by Product</h2>
-    <p class="story-text">This interactive dashboard allows you to explore the data dynamically. <strong>Click on any
-        bar</strong> in the top chart to filter the trend line below, isolating the specific growth trajectory for that
-      product category. Click the background to reset.</p>
+    <h2>10. Interactive Dashboard: Deep Dive</h2>
+    <p class="story-text"><strong>Click on any bar</strong> in the top chart to filter the trend line below. Click the
+      background to reset.</p>
     <div id="vis-dashboard" class="chart-box"></div>
+
+    <!-- 底部数据来源声明 -->
+    <div class="source-section">
+      <h3>Data Sources & Methodology</h3>
+      <ul>
+        <li><strong>Macro Data:</strong> Data derived from the <a href="https://open.dosm.gov.my/"
+            target="_blank">Department of Statistics Malaysia (DOSM)</a>, External Trade Statistics (2018-2023).</li>
+        <li><strong>Geographic Data:</strong> GeoJSON topological data aligned with DOSM administrative boundaries.</li>
+        <li><em>Note: The visualizations above are created for academic purposes (FIT2179).</em></li>
+      </ul>
+    </div>
   </div>
 
   <script>
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 800,
-      "height": 400,
+      "width": 900, "height": 400,
       "data": {
         "values": [
           { "year": "2018-01-01", "exports": 380000 },
@@ -178,17 +206,8 @@
         }
       },
       "encoding": {
-        "x": {
-          "field": "year",
-          "type": "temporal",
-          "timeUnit": "year",
-          "axis": { "title": "Year", "grid": false, "labelAngle": 0 }
-        },
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          "axis": { "title": "Export Value (RM)", "format": "s" }
-        },
+        "x": { "field": "year", "type": "temporal", "timeUnit": "year", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
+        "y": { "field": "exports", "type": "quantitative", "axis": { "title": "Export Value (RM)", "format": "s" } },
         "tooltip": [
           { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
           { "field": "exports", "type": "quantitative", "title": "Total Exports", "format": "," }
@@ -198,33 +217,16 @@
 
     var specMap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 800,
-      "height": 500,
-      "projection": { "type": "mercator", "scale": 2500, "center": [109.5, 4.0] },
-      "data": {
-        "url": "malaysia.geojson",
-        "format": { "type": "json", "property": "features" }
-      },
-      "transform": [
-        {
-          "lookup": "properties.name",
-          "from": {
-            "data": {
-              "url": "clean_state_exports.csv"
-            },
-            "key": "state",
-            "fields": ["exports"]
-          }
-        }
-      ],
+      "width": 900, "height": 500,
+      "projection": { "type": "mercator", "scale": 2800, "center": [109.5, 4.0] },
+      "data": { "url": "malaysia.geojson", "format": { "type": "json", "property": "features" } },
+      "transform": [{
+        "lookup": "properties.name",
+        "from": { "data": { "url": "clean_state_exports.csv" }, "key": "state", "fields": ["exports"] }
+      }],
       "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 0.5 },
       "encoding": {
-        "color": {
-          "field": "exports",
-          "type": "quantitative",
-          "scale": { "type": "log", "scheme": "blues" },
-          "legend": { "title": "Exports (RM)" }
-        },
+        "color": { "field": "exports", "type": "quantitative", "scale": { "type": "log", "scheme": "blues" }, "legend": { "title": "Exports (RM)" } },
         "tooltip": [
           { "field": "properties.name", "type": "nominal", "title": "State" },
           { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "," }
@@ -232,37 +234,15 @@
       }
     };
 
-    vegaEmbed('#vis-trend', specTrend).catch(console.error);
-    vegaEmbed('#vis-map', specMap).catch(console.error);
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 800,
-      "height": 400,
-      "data": {
-        "url": "export_destinations.csv"
-      },
-      "mark": {
-        "type": "bar",
-        "cornerRadiusEnd": 4
-      },
+      "width": "container", "height": 350,
+      "data": { "url": "export_destinations.csv" },
+      "mark": { "type": "bar", "cornerRadiusEnd": 4 },
       "encoding": {
-        "y": {
-          "field": "country",
-          "type": "nominal",
-          "sort": { "encoding": "x", "order": "descending" },
-          "axis": { "title": "Destination Country", "labelFontSize": 12 }
-        },
-        "x": {
-          "field": "exports",
-          "type": "quantitative",
-          "axis": { "title": "Export Value (RM Million)", "format": "s" }
-        },
-        "color": {
-          "field": "exports",
-          "type": "quantitative",
-          "scale": { "scheme": "tealblues" },
-          "legend": null
-        },
+        "y": { "field": "country", "type": "nominal", "sort": { "encoding": "x", "order": "descending" }, "axis": { "title": null, "labelFontSize": 12 } },
+        "x": { "field": "exports", "type": "quantitative", "axis": { "title": "Export Value (RM Million)", "format": "s" } },
+        "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
         "tooltip": [
           { "field": "country", "type": "nominal", "title": "Country" },
           { "field": "exports", "type": "quantitative", "title": "Exports (RM Million)", "format": "," }
@@ -270,32 +250,14 @@
       }
     };
 
-    vegaEmbed('#vis-bar', specBar).catch(console.error);
-
     var specDonut = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 450,
-      "height": 450,
-      "data": {
-        "url": "export_categories.csv"
-      },
-      "mark": {
-        "type": "arc",
-        "innerRadius": 80,
-        "stroke": "#fff",
-        "strokeWidth": 2
-      },
+      "width": 300, "height": 300,
+      "data": { "url": "export_categories.csv" },
+      "mark": { "type": "arc", "innerRadius": 60, "stroke": "#fff", "strokeWidth": 2 },
       "encoding": {
-        "theta": {
-          "field": "percentage",
-          "type": "quantitative"
-        },
-        "color": {
-          "field": "category",
-          "type": "nominal",
-          "scale": { "scheme": "blues" },
-          "legend": { "title": "Product Category", "orient": "right" }
-        },
+        "theta": { "field": "percentage", "type": "quantitative" },
+        "color": { "field": "category", "type": "nominal", "scale": { "scheme": "blues" }, "legend": { "title": "Category", "orient": "bottom" } },
         "tooltip": [
           { "field": "category", "type": "nominal", "title": "Category" },
           { "field": "percentage", "type": "quantitative", "title": "Share (%)" }
@@ -303,293 +265,124 @@
       }
     };
 
-    vegaEmbed('#vis-donut', specDonut).catch(console.error);
-
     var specBubble = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 600,
-      "height": 400,
-      "data": {
-        "url": "trade_balance.csv"
-      },
-      "params": [{
-        "name": "country_select",
-        "select": { "type": "point", "fields": ["country"] },
-        "bind": "legend"
-      }],
-      "mark": {
-        "type": "circle",
-        "stroke": "black",
-        "strokeWidth": 1
-      },
+      "width": 800, "height": 450,
+      "data": { "url": "trade_balance.csv" },
+      "params": [{ "name": "country_select", "select": { "type": "point", "fields": ["country"] }, "bind": "legend" }],
+      "mark": { "type": "circle", "stroke": "black", "strokeWidth": 1 },
       "encoding": {
-        "x": {
-          "field": "imports",
-          "type": "quantitative",
-          "scale": { "domain": [0, 200000] },
-          "axis": { "title": "Import Value (RM Million)", "format": "s" }
-        },
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          "scale": { "domain": [0, 240000] },
-          "axis": { "title": "Export Value (RM Million)", "format": "s" }
-        },
-        "size": {
-          "field": "total_trade",
-          "type": "quantitative",
-          "scale": { "range": [100, 3000] },
-          "legend": null
-        },
-        "color": {
-          "field": "country",
-          "type": "nominal",
-          "scale": { "scheme": "category10" },
-          "legend": { "title": "Click a Country" }
-        },
-        "opacity": {
-          "condition": { "param": "country_select", "value": 0.8 },
-          "value": 0.1
-        },
+        "x": { "field": "imports", "type": "quantitative", "scale": { "domain": [0, 200000] }, "axis": { "title": "Import Value (RM Million)", "format": "s" } },
+        "y": { "field": "exports", "type": "quantitative", "scale": { "domain": [0, 240000] }, "axis": { "title": "Export Value (RM Million)", "format": "s" } },
+        "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 3000] }, "legend": null },
+        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" }, "legend": { "title": "Click to Filter" } },
+        "opacity": { "condition": { "param": "country_select", "value": 0.8 }, "value": 0.1 },
         "tooltip": [
           { "field": "country", "type": "nominal", "title": "Country" },
           { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "," },
-          { "field": "imports", "type": "quantitative", "title": "Imports (RM)", "format": "," },
-          { "field": "total_trade", "type": "quantitative", "title": "Total Trade (RM)", "format": "," }
+          { "field": "imports", "type": "quantitative", "title": "Imports (RM)", "format": "," }
         ]
       }
     };
-
-    vegaEmbed('#vis-bubble', specBubble).catch(console.error);
 
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 800,
-      "height": 400,
-      "data": {
-        "url": "product_trends.csv"
-      },
-      "mark": {
-        "type": "line",
-        "point": { "size": 60, "filled": true }
-      },
+      "width": "container", "height": 300,
+      "data": { "url": "product_trends.csv" },
+      "mark": { "type": "line", "point": { "size": 60, "filled": true } },
       "encoding": {
-        "x": {
-          "field": "year",
-          "type": "temporal",
-          "timeUnit": "year",
-          "axis": { "title": "Year", "grid": false, "labelAngle": 0 }
-        },
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          "axis": { "title": "Export Value (RM Million)", "format": "s" }
-        },
-        "color": {
-          "field": "product",
-          "type": "nominal",
-          "scale": { "scheme": "tableau10" },
-          "legend": { "title": "Product Category" }
-        },
+        "x": { "field": "year", "type": "temporal", "timeUnit": "year", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
+        "y": { "field": "exports", "type": "quantitative", "axis": { "title": "Export Value", "format": "s" } },
+        "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": null, "orient": "bottom" } },
         "tooltip": [
           { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
           { "field": "product", "type": "nominal", "title": "Product" },
-          { "field": "exports", "type": "quantitative", "title": "Exports (RM Million)", "format": "," }
+          { "field": "exports", "type": "quantitative", "title": "Exports", "format": "," }
         ]
       }
     };
-
-    vegaEmbed('#vis-line', specLine).catch(console.error);
 
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 700,
-      "height": 400,
-      "data": {
-        "url": "market_share.csv"
-      },
+      "width": "container", "height": 300,
+      "data": { "url": "market_share.csv" },
       "mark": "bar",
       "encoding": {
-        "x": {
-          "field": "year",
-          "type": "ordinal",
-          "timeUnit": "year",
-          "axis": { "title": "Year", "labelAngle": 0 }
-        },
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          "stack": "normalize",
-          "axis": { "title": "Market Share (%)", "format": "%" }
-        },
-        "color": {
-          "field": "country",
-          "type": "nominal",
-          "scale": { "scheme": "set2" },
-          "legend": { "title": "Top Destinations" }
-        },
+        "x": { "field": "year", "type": "ordinal", "timeUnit": "year", "axis": { "title": "Year", "labelAngle": 0 } },
+        "y": { "field": "exports", "type": "quantitative", "stack": "normalize", "axis": { "title": "Market Share", "format": "%" } },
+        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "set2" }, "legend": { "title": null, "orient": "bottom" } },
         "tooltip": [
           { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
           { "field": "country", "type": "nominal", "title": "Country" },
-          { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "format": "," }
+          { "field": "exports", "type": "quantitative", "title": "Export Value", "format": "," }
         ]
       }
     };
-
-    vegaEmbed('#vis-stacked', specStacked).catch(console.error);
 
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 700,
-      "height": 200,
+      "width": 800, "height": 200,
       "data": { "url": "seasonal_heatmap.csv" },
-      "mark": {
-        "type": "rect",
-        "tooltip": true
-      },
+      "mark": { "type": "rect", "tooltip": true },
       "encoding": {
-        "x": {
-          "field": "month",
-          "type": "ordinal",
-          "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-          "axis": { "title": "Month", "labelAngle": 0 }
-        },
-        "y": {
-          "field": "year",
-          "type": "ordinal",
-          "axis": { "title": "Year" }
-        },
-        "color": {
-          "field": "exports",
-          "type": "quantitative",
-          "scale": { "scheme": "oranges" },
-          "legend": { "title": "Exports (RM Million)" }
-        },
-        "tooltip": [
-          { "field": "year", "type": "ordinal", "title": "Year" },
-          { "field": "month", "type": "ordinal", "title": "Month" },
-          { "field": "exports", "type": "quantitative", "title": "Export Value (RM Million)", "format": "," }
-        ]
+        "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "axis": { "title": "Month", "labelAngle": 0 } },
+        "y": { "field": "year", "type": "ordinal", "axis": { "title": "Year" } },
+        "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)" } }
       }
     };
-
-    vegaEmbed('#vis-heatmap', specHeatmap).catch(console.error);
 
     var specFacet = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "top_states_trend.csv" },
-      "mark": {
-        "type": "area",
-        "line": true,
-        "point": true,
-        "opacity": 0.7
-      },
+      "mark": { "type": "area", "line": true, "point": true, "opacity": 0.7 },
       "encoding": {
-        "column": {
-          "field": "state",
-          "type": "nominal",
-          "title": null,
-          "sort": ["Pulau Pinang", "Johor", "Selangor", "Kedah"],
-          "header": { "labelFontSize": 14, "labelFontWeight": "bold" }
-        },
-        "x": {
-          "field": "year",
-          "type": "temporal",
-          "timeUnit": "year",
-          "axis": { "title": "Year", "grid": false }
-        },
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          "axis": { "title": "Exports (RM)", "format": "s" }
-        },
-        "color": {
-          "field": "state",
-          "type": "nominal",
-          "scale": { "scheme": "category10" },
-          "legend": null
-        },
-        "tooltip": [
-          { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-          { "field": "state", "type": "nominal", "title": "State" },
-          { "field": "exports", "type": "quantitative", "title": "Exports (RM Million)", "format": "," }
-        ]
+        "column": { "field": "state", "type": "nominal", "title": null, "sort": ["Pulau Pinang", "Johor", "Selangor", "Kedah"], "header": { "labelFontSize": 14, "labelFontWeight": "bold" } },
+        "x": { "field": "year", "type": "temporal", "timeUnit": "year", "axis": { "title": "Year", "grid": false } },
+        "y": { "field": "exports", "type": "quantitative", "axis": { "title": "Exports (RM)", "format": "s" } },
+        "color": { "field": "state", "type": "nominal", "scale": { "scheme": "category10" }, "legend": null }
       },
-      "config": {
-        "view": { "stroke": "transparent" }
-      }
+      "config": { "view": { "stroke": "transparent" } }
     };
-
-    vegaEmbed('#vis-facet', specFacet).catch(console.error);
 
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv" },
       "vconcat": [
         {
-          "width": 700,
-          "height": 120,
-          "title": "Click a Bar to Filter Trends",
-          "params": [{
-            "name": "category_click",
-            "select": { "type": "point", "encodings": ["color"] }
-          }],
+          "width": 800, "height": 120, "title": "Click a Bar to Filter Trends",
+          "params": [{ "name": "category_click", "select": { "type": "point", "encodings": ["color"] } }],
           "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
-            "x": {
-              "field": "exports",
-              "type": "quantitative",
-              "aggregate": "sum",
-              "axis": { "title": "Total Exports (2019-2023)" }
-            },
-            "y": {
-              "field": "product",
-              "type": "nominal",
-              "title": null,
-              "sort": "-x"
-            },
+            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "axis": { "title": "Total Exports (2019-2023)" } },
+            "y": { "field": "product", "type": "nominal", "title": null, "sort": "-x" },
             "color": {
-              "condition": {
-                "param": "category_click",
-                "field": "product",
-                "type": "nominal",
-                "scale": { "scheme": "tableau10" },
-                "legend": null
-              },
+              "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null },
               "value": "lightgray"
             }
           }
         },
         {
-          "width": 700,
-          "height": 250,
+          "width": 800, "height": 250,
           "mark": { "type": "line", "point": { "size": 50, "filled": true } },
           "encoding": {
-            "x": {
-              "field": "year",
-              "type": "temporal",
-              "timeUnit": "year",
-              "axis": { "title": "Year", "grid": false }
-            },
-            "y": {
-              "field": "exports",
-              "type": "quantitative",
-              "axis": { "title": "Export Value (RM)" }
-            },
-            "color": {
-              "field": "product",
-              "type": "nominal",
-              "legend": null
-            },
-            "opacity": {
-              "condition": { "param": "category_click", "value": 1 },
-              "value": 0.1
-            }
+            "x": { "field": "year", "type": "temporal", "timeUnit": "year", "axis": { "title": "Year", "grid": false } },
+            "y": { "field": "exports", "type": "quantitative", "axis": { "title": "Export Value (RM)" } },
+            "color": { "field": "product", "type": "nominal", "legend": null },
+            "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 }
           }
         }
       ]
     };
 
+    vegaEmbed('#vis-trend', specTrend).catch(console.error);
+    vegaEmbed('#vis-map', specMap).catch(console.error);
+    vegaEmbed('#vis-bar', specBar).catch(console.error);
+    vegaEmbed('#vis-donut', specDonut).catch(console.error);
+    vegaEmbed('#vis-bubble', specBubble).catch(console.error);
+    vegaEmbed('#vis-line', specLine).catch(console.error);
+    vegaEmbed('#vis-stacked', specStacked).catch(console.error);
+    vegaEmbed('#vis-heatmap', specHeatmap).catch(console.error);
+    vegaEmbed('#vis-facet', specFacet).catch(console.error);
     vegaEmbed('#vis-dashboard', specDashboard).catch(console.error);
   </script>
 </body>
