@@ -106,6 +106,28 @@
     .source-section a:hover {
       text-decoration: underline;
     }
+
+    /* 高级 Tooltip (鼠标悬停提示框) 深度美化 */
+    #vg-tooltip-element {
+      font-family: 'Inter', sans-serif !important;
+      font-size: 13px !important;
+      background-color: rgba(20, 20, 25, 0.95) !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 8px !important;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+      padding: 12px 16px !important;
+    }
+
+    #vg-tooltip-element h2 {
+      color: #a0a0a5 !important;
+      font-size: 11px !important;
+      font-weight: 600 !important;
+      margin-bottom: 6px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
   </style>
 </head>
 
@@ -184,6 +206,31 @@
   </div>
 
   <script>
+    // HD 级全局图表配置 (统一字体、虚线网格、移除外边框)
+    var hdConfig = {
+      "font": "Inter, sans-serif",
+      "axis": {
+        "labelColor": "#666666",
+        "titleColor": "#222222",
+        "titleFontWeight": 600,
+        "gridColor": "#e5e5e5",
+        "gridDash": [4, 4], // 将生硬的实线改为高级的虚线
+        "domainColor": "#cccccc",
+        "tickColor": "#cccccc",
+        "labelFontSize": 11,
+        "titleFontSize": 13
+      },
+      "legend": {
+        "labelColor": "#444444",
+        "titleColor": "#222222",
+        "titleFontWeight": 600,
+        "labelFontSize": 12
+      },
+      "view": {
+        "stroke": "transparent" // 移除所有图表默认的丑陋外边框
+      }
+    };
+
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": 900, "height": 400,
@@ -374,16 +421,16 @@
       ]
     };
 
-    vegaEmbed('#vis-trend', specTrend).catch(console.error);
-    vegaEmbed('#vis-map', specMap).catch(console.error);
-    vegaEmbed('#vis-bar', specBar).catch(console.error);
-    vegaEmbed('#vis-donut', specDonut).catch(console.error);
-    vegaEmbed('#vis-bubble', specBubble).catch(console.error);
-    vegaEmbed('#vis-line', specLine).catch(console.error);
-    vegaEmbed('#vis-stacked', specStacked).catch(console.error);
-    vegaEmbed('#vis-heatmap', specHeatmap).catch(console.error);
-    vegaEmbed('#vis-facet', specFacet).catch(console.error);
-    vegaEmbed('#vis-dashboard', specDashboard).catch(console.error);
+    vegaEmbed('#vis-trend', specTrend, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-map', specMap, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-bar', specBar, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-donut', specDonut, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-bubble', specBubble, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-line', specLine, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-stacked', specStacked, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-facet', specFacet, { config: hdConfig }).catch(console.error);
+    vegaEmbed('#vis-dashboard', specDashboard, { config: hdConfig }).catch(console.error);
   </script>
 </body>
 
