@@ -88,6 +88,12 @@
       of Malaysia's top 4 tech hubs. While Penang and Johor show aggressive exponential growth, Kedah is emerging as a
       steady new player.</p>
     <div id="vis-facet" class="chart-box"></div>
+
+    <h2>10. Interactive Dashboard: Deep Dive by Product</h2>
+    <p class="story-text">This interactive dashboard allows you to explore the data dynamically. <strong>Click on any
+        bar</strong> in the top chart to filter the trend line below, isolating the specific growth trajectory for that
+      product category. Click the background to reset.</p>
+    <div id="vis-dashboard" class="chart-box"></div>
   </div>
 
   <script>
@@ -457,6 +463,76 @@
     };
 
     vegaEmbed('#vis-facet', specFacet).catch(console.error);
+
+    var specDashboard = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "data": { "url": "product_trends.csv" },
+      "vconcat": [
+        {
+          "width": 700,
+          "height": 120,
+          "title": "Click a Bar to Filter Trends",
+          "params": [{
+            "name": "category_click",
+            "select": { "type": "point", "encodings": ["color"] }
+          }],
+          "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
+          "encoding": {
+            "x": {
+              "field": "exports",
+              "type": "quantitative",
+              "aggregate": "sum",
+              "axis": { "title": "Total Exports (2019-2023)" }
+            },
+            "y": {
+              "field": "product",
+              "type": "nominal",
+              "title": null,
+              "sort": "-x"
+            },
+            "color": {
+              "condition": {
+                "param": "category_click",
+                "field": "product",
+                "type": "nominal",
+                "scale": { "scheme": "tableau10" },
+                "legend": null
+              },
+              "value": "lightgray"
+            }
+          }
+        },
+        {
+          "width": 700,
+          "height": 250,
+          "mark": { "type": "line", "point": { "size": 50, "filled": true } },
+          "encoding": {
+            "x": {
+              "field": "year",
+              "type": "temporal",
+              "timeUnit": "year",
+              "axis": { "title": "Year", "grid": false }
+            },
+            "y": {
+              "field": "exports",
+              "type": "quantitative",
+              "axis": { "title": "Export Value (RM)" }
+            },
+            "color": {
+              "field": "product",
+              "type": "nominal",
+              "legend": null
+            },
+            "opacity": {
+              "condition": { "param": "category_click", "value": 1 },
+              "value": 0.1
+            }
+          }
+        }
+      ]
+    };
+
+    vegaEmbed('#vis-dashboard', specDashboard).catch(console.error);
   </script>
 </body>
 
