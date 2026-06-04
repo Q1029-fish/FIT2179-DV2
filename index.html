@@ -76,6 +76,12 @@
     <p class="story-text">By normalizing the export volumes to 100%, we can analyze the relative market share of our top
       3 trading partners. This reveals subtle shifts in supply chain reliance over the past five years.</p>
     <div id="vis-stacked" class="chart-box"></div>
+
+    <h2>8. Seasonal Surges: When Does Export Peak?</h2>
+    <p class="story-text">Is there a seasonal pattern to the semiconductor trade? This heatmap visualizes export
+      intensity by month and year. Notice the consistent darkening of colors towards the end of each year, likely driven
+      by global consumer electronics manufacturing cycles ahead of holiday seasons.</p>
+    <div id="vis-heatmap" class="chart-box"></div>
   </div>
 
   <script>
@@ -361,6 +367,43 @@
     };
 
     vegaEmbed('#vis-stacked', specStacked).catch(console.error);
+
+    var specHeatmap = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "width": 700,
+      "height": 200,
+      "data": { "url": "seasonal_heatmap.csv" },
+      "mark": {
+        "type": "rect",
+        "tooltip": true
+      },
+      "encoding": {
+        "x": {
+          "field": "month",
+          "type": "ordinal",
+          "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+          "axis": { "title": "Month", "labelAngle": 0 }
+        },
+        "y": {
+          "field": "year",
+          "type": "ordinal",
+          "axis": { "title": "Year" }
+        },
+        "color": {
+          "field": "exports",
+          "type": "quantitative",
+          "scale": { "scheme": "oranges" },
+          "legend": { "title": "Exports (RM Million)" }
+        },
+        "tooltip": [
+          { "field": "year", "type": "ordinal", "title": "Year" },
+          { "field": "month", "type": "ordinal", "title": "Month" },
+          { "field": "exports", "type": "quantitative", "title": "Export Value (RM Million)", "format": "," }
+        ]
+      }
+    };
+
+    vegaEmbed('#vis-heatmap', specHeatmap).catch(console.error);
   </script>
 </body>
 
