@@ -71,6 +71,11 @@
       the uncontested pioneer driving Malaysia's export boom, outstripping other electronic components significantly.
     </p>
     <div id="vis-line" class="chart-box"></div>
+
+    <h2>7. Shifting Alliances: Top Buyers' Market Share</h2>
+    <p class="story-text">By normalizing the export volumes to 100%, we can analyze the relative market share of our top
+      3 trading partners. This reveals subtle shifts in supply chain reliance over the past five years.</p>
+    <div id="vis-stacked" class="chart-box"></div>
   </div>
 
   <script>
@@ -319,6 +324,43 @@
     };
 
     vegaEmbed('#vis-line', specLine).catch(console.error);
+
+    var specStacked = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "width": 700,
+      "height": 400,
+      "data": {
+        "url": "market_share.csv"
+      },
+      "mark": "bar",
+      "encoding": {
+        "x": {
+          "field": "year",
+          "type": "ordinal",
+          "timeUnit": "year",
+          "axis": { "title": "Year", "labelAngle": 0 }
+        },
+        "y": {
+          "field": "exports",
+          "type": "quantitative",
+          "stack": "normalize",
+          "axis": { "title": "Market Share (%)", "format": "%" }
+        },
+        "color": {
+          "field": "country",
+          "type": "nominal",
+          "scale": { "scheme": "set2" },
+          "legend": { "title": "Top Destinations" }
+        },
+        "tooltip": [
+          { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+          { "field": "country", "type": "nominal", "title": "Country" },
+          { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "format": "," }
+        ]
+      }
+    };
+
+    vegaEmbed('#vis-stacked', specStacked).catch(console.error);
   </script>
 </body>
 
