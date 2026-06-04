@@ -18,23 +18,30 @@
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 
   <style>
+    /* 页面全局背景与基础设置 */
     body {
       font-family: 'Lora', serif;
+      /* 优雅的衬线正文字体 */
       background-color: #f4f4f7;
+      /* 高级灰白背景，降低刺眼感 */
       color: #2c2c30;
       margin: 0;
       padding: 0;
     }
 
+    /* 核心内容阅读区：像一张放在桌面上的 A4 报告 */
     .content-container {
       max-width: 960px;
+      /* 控制最大行宽，这是人眼阅读最舒服的宽度 */
       margin: 50px auto;
       padding: 60px 80px;
       background: #ffffff;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      /* 极其柔和的阴影 */
       border-radius: 12px;
     }
 
+    /* 标题排版：使用无衬线字体形成强烈对比 */
     h1,
     h2,
     h3 {
@@ -55,18 +62,23 @@
       font-size: 1.6rem;
       font-weight: 600;
       margin-top: 80px;
+      /* 标题上方留出巨大呼吸空间 */
       border-bottom: 2px solid #f0f0f0;
+      /* 添加一条很浅的分隔线 */
       padding-bottom: 12px;
       margin-bottom: 25px;
     }
 
+    /* 数据故事叙述文本 (Data Storytelling) */
     .story-text {
       font-size: 1.15rem;
       line-height: 1.8;
+      /* 加大行高，绝不让文字挤在一起 */
       color: #4a4a52;
       margin-bottom: 35px;
     }
 
+    /* 图表容器：居中并确保上下不拥挤 */
     .chart-box {
       margin-top: 30px;
       margin-bottom: 60px;
@@ -74,11 +86,13 @@
       justify-content: center;
     }
 
+    /* 底部数据来源声明区 (学术严谨性的体现) */
     .source-section {
       margin-top: 80px;
       padding-top: 30px;
       border-top: 1px solid #e0e0e0;
       font-family: 'Inter', sans-serif;
+      /* 来源声明用干练的无衬线字体 */
       font-size: 0.85rem;
       color: #777;
       line-height: 1.6;
