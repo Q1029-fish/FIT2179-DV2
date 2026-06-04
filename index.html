@@ -225,9 +225,13 @@
       "data": {
         "url": "trade_balance.csv"
       },
+      "params": [{
+        "name": "country_select",
+        "select": { "type": "point", "fields": ["country"] },
+        "bind": "legend"
+      }],
       "mark": {
         "type": "circle",
-        "opacity": 0.8,
         "stroke": "black",
         "strokeWidth": 1
       },
@@ -254,7 +258,12 @@
           "field": "country",
           "type": "nominal",
           "scale": { "scheme": "category10" },
-          "legend": { "title": "Country" }
+          "legend": { "title": "Click a Country" }
+        },
+        // 【核心交互逻辑】：如果没被选中，透明度降为 0.1
+        "opacity": {
+          "condition": { "param": "country_select", "value": 0.8 },
+          "value": 0.1
         },
         "tooltip": [
           { "field": "country", "type": "nominal", "title": "Country" },
