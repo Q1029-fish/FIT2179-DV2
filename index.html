@@ -3,36 +3,94 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>DV2 - Malaysia E&E Exports</title>
+  <title>Malaysia's Silicon Valley: Semiconductor Exports</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Lora:ital,wght@0,400;0,500;1,400&display=swap"
+    rel="stylesheet">
+
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css">
+
   <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
   <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f9f9f9;
+      font-family: 'Lora', serif;
+      background-color: #f4f4f7;
+      color: #2c2c30;
+      margin: 0;
+      padding: 0;
     }
 
     .content-container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 2rem;
-      background: white;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+      max-width: 960px;
+      margin: 50px auto;
+      padding: 60px 80px;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+      border-radius: 12px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-family: 'Inter', sans-serif;
+      color: #111111;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: -1px;
+      line-height: 1.2;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      font-weight: 600;
+      margin-top: 80px;
+      border-bottom: 2px solid #f0f0f0;
+      padding-bottom: 12px;
+      margin-bottom: 25px;
+    }
+
+    .story-text {
+      font-size: 1.15rem;
+      line-height: 1.8;
+      color: #4a4a52;
+      margin-bottom: 35px;
     }
 
     .chart-box {
-      margin-top: 20px;
+      margin-top: 30px;
       margin-bottom: 60px;
       display: flex;
       justify-content: center;
     }
 
-    .story-text {
+    .source-section {
+      margin-top: 80px;
+      padding-top: 30px;
+      border-top: 1px solid #e0e0e0;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: #777;
       line-height: 1.6;
-      color: #333;
-      margin-bottom: 20px;
+    }
+
+    .source-section a {
+      color: #1f77b4;
+      text-decoration: none;
+    }
+
+    .source-section a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
