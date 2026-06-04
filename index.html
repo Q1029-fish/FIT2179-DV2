@@ -233,61 +233,83 @@
 
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      // 直接读取刚刚洗好的月度真实数据
       "data": { "url": "monthly_ee_exports.csv" },
       "vconcat": [
-        // ---------- 上半部分：主折线/面积图 ----------
+        // ---------- 上半部分：主折线图 (加入垂直虚线与吸附效果) ----------
         {
-          "width": "container", // 自适应宽度
-          "height": 300,
-          "mark": {
-            "type": "area",
-            "line": { "color": "#1f77b4" }, // 顶部蓝线
-            // 高级视觉效果：从蓝到白的渐变填充
-            "color": {
-              "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear",
-              "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "#1f77b4" }]
-            }
-          },
+          "width": "container",
+          "height": 350,
+          // 共享坐标轴编码，这样缩放才能完美联动
           "encoding": {
             "x": {
               "field": "date",
               "type": "temporal",
-              // 关键魔法：将主图的 X 轴范围，绑定到底部滑块（brush）的输出参数上
               "scale": { "domain": { "param": "brush" } },
-              "axis": { "title": "", "grid": false }
+              // ✅ 修复：把缺失的年份标题加回来了！
+              "axis": { "title": "Year", "grid": false }
             },
             "y": {
               "field": "exports",
               "type": "quantitative",
-              "axis": { "title": "Export Value (RM)", "format": "s" } // "s" 会自动显示缩写如 20G, 30G
+              "axis": { "title": "Export Value (RM)", "format": "s" }
+            }
+          },
+          "layer": [
+            {
+              // 第 1 层：基础的科技蓝折线
+              "mark": { "type": "line", "color": "#3b82f6", "strokeWidth": 1.5 }
             },
-            "tooltip": [
-              { "field": "date", "type": "temporal", "timeUnit": "yearmonth", "title": "Date" },
-              { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "," }
-            ]
-          }
+            {
+              // 第 2 层：隐形的鼠标捕获网 (nearest:true 实现自动吸附)
+              "params": [{
+                "name": "hover",
+                "select": {
+                  "type": "point",
+                  "fields": ["date"],
+                  "nearest": true,
+                  "on": "mouseover",
+                  "clear": "mouseout"
+                }
+              }],
+              "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" },
+              "encoding": {
+                "tooltip": [
+                  { "field": "date", "type": "temporal", "timeUnit": "yearmonth", "title": "Date" },
+                  { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "," }
+                ]
+              }
+            },
+            {
+              // 第 3 层：垂直辅助虚线 (只有鼠标悬停时才显示)
+              "transform": [{ "filter": { "param": "hover", "empty": false } }],
+              "mark": { "type": "rule", "color": "#888888", "strokeDash": [4, 4], "strokeWidth": 1 }
+            },
+            {
+              // 第 4 层：折线上的数据交点小黑圆圈
+              "transform": [{ "filter": { "param": "hover", "empty": false } }],
+              "mark": { "type": "circle", "color": "#111111", "size": 70 }
+            }
+          ]
         },
-        // ---------- 下半部分：带滑块的迷你导航图 ----------
+        // ---------- 下半部分：带滑块的时间缩放轴 ----------
         {
           "width": "container",
           "height": 50,
-          "mark": { "type": "area", "color": "#1f77b4", "opacity": 0.3 }, // 浅蓝色的小面积图
+          "mark": { "type": "line", "color": "#3b82f6", "strokeWidth": 1 },
           "params": [{
-            "name": "brush", // 命名交互滑块
-            "select": { "type": "interval", "encodings": ["x"] } // 允许在 X 轴拖拽框选
+            "name": "brush",
+            "select": { "type": "interval", "encodings": ["x"] }
           }],
           "encoding": {
             "x": {
               "field": "date",
               "type": "temporal",
-              "axis": { "title": "Drag the slider to zoom in/out", "format": "%Y", "grid": false }
+              "axis": { "title": "Drag to zoom (Timeline)", "grid": false, "tickCount": 10 }
             },
             "y": {
               "field": "exports",
               "type": "quantitative",
-              // 隐藏底图的 Y 轴标签和网格，保持极致清爽
-              "axis": { "labels": false, "tickCount": 0, "title": "", "grid": false, "domain": false }
+              "axis": null // 隐藏 Y 轴，保持清爽
             }
           }
         }
