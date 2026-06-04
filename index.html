@@ -54,6 +54,11 @@
     <p class="story-text">Who relies on Malaysia's chips? This chart reveals the top 10 export destinations,
       highlighting Malaysia's crucial role in fulfilling the demands of tech giants in Singapore, the US, and China.</p>
     <div id="vis-bar" class="chart-box"></div>
+
+    <h2>4. What Exactly Are We Exporting?</h2>
+    <p class="story-text">While E&E is a broad category, the true engine of Malaysia's export economy is raw
+      semiconductor components, specifically Integrated Circuits (Chips).</p>
+    <div id="vis-donut" class="chart-box"></div>
   </div>
 
   <script>
@@ -173,6 +178,39 @@
     };
 
     vegaEmbed('#vis-bar', specBar).catch(console.error);
+
+    var specDonut = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "width": 450,
+      "height": 450,
+      "data": {
+        "url": "export_categories.csv"
+      },
+      "mark": {
+        "type": "arc",
+        "innerRadius": 80,
+        "stroke": "#fff",
+        "strokeWidth": 2
+      },
+      "encoding": {
+        "theta": {
+          "field": "percentage",
+          "type": "quantitative"
+        },
+        "color": {
+          "field": "category",
+          "type": "nominal",
+          "scale": { "scheme": "blues" },
+          "legend": { "title": "Product Category", "orient": "right" }
+        },
+        "tooltip": [
+          { "field": "category", "type": "nominal", "title": "Category" },
+          { "field": "percentage", "type": "quantitative", "title": "Share (%)" }
+        ]
+      }
+    };
+
+    vegaEmbed('#vis-donut', specDonut).catch(console.error);
   </script>
 </body>
 
