@@ -283,7 +283,8 @@
 
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 350,
+      "width": "container",
+      "height": 300, // 【关键修改】：从 350 降到 300，与右边对齐
       "data": { "url": "export_destinations.csv" },
       "mark": { "type": "bar", "cornerRadiusEnd": 4 },
       "encoding": {
@@ -299,12 +300,21 @@
 
     var specDonut = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 300, "height": 300,
+      "width": "container", // 【关键修改】：让饼图自动居中适应那一半的格子
+      "height": 300, // 【关键修改】：高度设为 300，与左边绝对对齐
       "data": { "url": "export_categories.csv" },
       "mark": { "type": "arc", "innerRadius": 60, "stroke": "#fff", "strokeWidth": 2 },
       "encoding": {
         "theta": { "field": "percentage", "type": "quantitative" },
-        "color": { "field": "category", "type": "nominal", "scale": { "scheme": "blues" }, "legend": { "title": "Category", "orient": "bottom" } },
+        "color": {
+          "field": "category",
+          "type": "nominal",
+          "scale": { "scheme": "blues" },
+          "legend": {
+            "title": "Category",
+            "orient": "right" // 【关键修改】：图例放回右侧，竖向排列
+          }
+        },
         "tooltip": [
           { "field": "category", "type": "nominal", "title": "Category" },
           { "field": "percentage", "type": "quantitative", "title": "Share (%)" }
