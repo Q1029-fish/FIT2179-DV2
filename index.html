@@ -65,6 +65,12 @@
       partners. Countries plotted higher on the Y-axis represent strong export destinations, while the size of the
       bubble indicates the total trade volume.</p>
     <div id="vis-bubble" class="chart-box"></div>
+
+    <h2>6. Growth Pillars: Product Category Trends</h2>
+    <p class="story-text">Tracking the growth of different sub-sectors over time reveals that Integrated Circuits remain
+      the uncontested pioneer driving Malaysia's export boom, outstripping other electronic components significantly.
+    </p>
+    <div id="vis-line" class="chart-box"></div>
   </div>
 
   <script>
@@ -260,7 +266,6 @@
           "scale": { "scheme": "category10" },
           "legend": { "title": "Click a Country" }
         },
-        // 【核心交互逻辑】：如果没被选中，透明度降为 0.1
         "opacity": {
           "condition": { "param": "country_select", "value": 0.8 },
           "value": 0.1
@@ -275,6 +280,45 @@
     };
 
     vegaEmbed('#vis-bubble', specBubble).catch(console.error);
+
+    var specLine = {
+      "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "width": 800,
+      "height": 400,
+      "data": {
+        "url": "product_trends.csv"
+      },
+      "mark": {
+        "type": "line",
+        "point": { "size": 60, "filled": true }
+      },
+      "encoding": {
+        "x": {
+          "field": "year",
+          "type": "temporal",
+          "timeUnit": "year",
+          "axis": { "title": "Year", "grid": false, "labelAngle": 0 }
+        },
+        "y": {
+          "field": "exports",
+          "type": "quantitative",
+          "axis": { "title": "Export Value (RM Million)", "format": "s" }
+        },
+        "color": {
+          "field": "product",
+          "type": "nominal",
+          "scale": { "scheme": "tableau10" },
+          "legend": { "title": "Product Category" }
+        },
+        "tooltip": [
+          { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+          { "field": "product", "type": "nominal", "title": "Product" },
+          { "field": "exports", "type": "quantitative", "title": "Exports (RM Million)", "format": "," }
+        ]
+      }
+    };
+
+    vegaEmbed('#vis-line', specLine).catch(console.error);
   </script>
 </body>
 
