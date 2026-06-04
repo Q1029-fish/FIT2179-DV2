@@ -137,7 +137,7 @@
     <h1 style="text-align: center;">Malaysia's Silicon Valley: Semiconductor Exports</h1>
 
     <!-- 单列区：趋势与地图 -->
-    <h2>1. The National Growth Trend</h2>
+    <h2>1. Malaysia E&E Exports</h2>
     <p class="story-text">This chart shows the rapid growth of E&E exports over the last few years.</p>
     <div id="vis-trend" class="chart-box"></div>
 
@@ -233,33 +233,65 @@
 
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 900, "height": 400,
-      "data": {
-        "values": [
-          { "year": "2018-01-01", "exports": 380000 },
-          { "year": "2019-01-01", "exports": 372000 },
-          { "year": "2020-01-01", "exports": 386000 },
-          { "year": "2021-01-01", "exports": 455000 },
-          { "year": "2022-01-01", "exports": 593000 },
-          { "year": "2023-01-01", "exports": 575000 }
-        ]
-      },
-      "mark": {
-        "type": "area",
-        "line": { "color": "#1f77b4" },
-        "color": {
-          "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear",
-          "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "#1f77b4" }]
+      // 直接读取刚刚洗好的月度真实数据
+      "data": { "url": "monthly_ee_exports.csv" },
+      "vconcat": [
+        // ---------- 上半部分：主折线/面积图 ----------
+        {
+          "width": "container", // 自适应宽度
+          "height": 300,
+          "mark": {
+            "type": "area",
+            "line": { "color": "#1f77b4" }, // 顶部蓝线
+            // 高级视觉效果：从蓝到白的渐变填充
+            "color": {
+              "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear",
+              "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "#1f77b4" }]
+            }
+          },
+          "encoding": {
+            "x": {
+              "field": "date",
+              "type": "temporal",
+              // 关键魔法：将主图的 X 轴范围，绑定到底部滑块（brush）的输出参数上
+              "scale": { "domain": { "param": "brush" } },
+              "axis": { "title": "", "grid": false }
+            },
+            "y": {
+              "field": "exports",
+              "type": "quantitative",
+              "axis": { "title": "Export Value (RM)", "format": "s" } // "s" 会自动显示缩写如 20G, 30G
+            },
+            "tooltip": [
+              { "field": "date", "type": "temporal", "timeUnit": "yearmonth", "title": "Date" },
+              { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "," }
+            ]
+          }
+        },
+        // ---------- 下半部分：带滑块的迷你导航图 ----------
+        {
+          "width": "container",
+          "height": 50,
+          "mark": { "type": "area", "color": "#1f77b4", "opacity": 0.3 }, // 浅蓝色的小面积图
+          "params": [{
+            "name": "brush", // 命名交互滑块
+            "select": { "type": "interval", "encodings": ["x"] } // 允许在 X 轴拖拽框选
+          }],
+          "encoding": {
+            "x": {
+              "field": "date",
+              "type": "temporal",
+              "axis": { "title": "Drag the slider to zoom in/out", "format": "%Y", "grid": false }
+            },
+            "y": {
+              "field": "exports",
+              "type": "quantitative",
+              // 隐藏底图的 Y 轴标签和网格，保持极致清爽
+              "axis": { "labels": false, "tickCount": 0, "title": "", "grid": false, "domain": false }
+            }
+          }
         }
-      },
-      "encoding": {
-        "x": { "field": "year", "type": "temporal", "timeUnit": "year", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
-        "y": { "field": "exports", "type": "quantitative", "axis": { "title": "Export Value (RM)", "format": "s" } },
-        "tooltip": [
-          { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-          { "field": "exports", "type": "quantitative", "title": "Total Exports", "format": "," }
-        ]
-      }
+      ]
     };
 
     var specMap = {
