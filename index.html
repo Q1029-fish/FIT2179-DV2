@@ -528,32 +528,41 @@
       }
     };
 
-    // 10. Dashboard - 终极稳健版 (已修复布局与交互)
+    // 10. Dashboard - 交互与图例增强完整版
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv", "format": { "type": "csv", "parse": { "exports": "number" } } },
       "vconcat": [
         {
-          "width": 800, "height": 100, "title": "Click a Bar to Filter Trends",
+          "width": 800, "height": 100, "title": "Total Exports by Product Category (Click to Filter)",
           "params": [{ "name": "category_click", "select": { "type": "point", "fields": ["product"] } }],
           "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
-            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports", "axis": { "format": "~s" } },
-            "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null },
+            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM)", "axis": { "format": "~s" } },
+            "y": { "field": "product", "type": "nominal", "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null },
             "color": {
-              "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null },
+              "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" } },
               "value": "#cbd5e1"
-            }
+            },
+            "tooltip": [
+              { "field": "product", "title": "Category" },
+              { "field": "exports", "aggregate": "sum", "title": "Total Exports", "format": "~s" }
+            ]
           }
         },
         {
-          "width": 800, "height": 200,
-          "mark": { "type": "line", "point": { "size": 50, "filled": true } },
+          "width": 800, "height": 200, "title": "Historical Trend (Filtered)",
+          "mark": { "type": "line", "point": { "size": 60, "filled": true } },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
             "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "axis": { "format": "~s" } },
-            "color": { "field": "product", "type": "nominal", "legend": null },
-            "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 }
+            "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Product Category" } },
+            "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 },
+            "tooltip": [
+              { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+              { "field": "product", "title": "Category" },
+              { "field": "exports", "type": "quantitative", "title": "Value", "format": "~s" }
+            ]
           }
         }
       ]
