@@ -360,17 +360,24 @@
       ]
     };
 
-    // 4. Map: Import Origins (Fixed missing background layer)
+    // 4. Map: Import Origins (Pacific-Centered Regional Map)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 900, "height": 450,
-      "projection": { "type": "equalEarth" },
+      "width": "container", "height": 450,
+      // 核心魔法区：裁剪地球，只保留亚洲到北美的贸易走廊
+      "projection": {
+        "type": "naturalEarth1",
+        "rotate": [-150, 0, 0], // 把经度 -150 (太平洋中心) 转到屏幕正中央
+        "scale": 160            // 放大镜：拉近焦距，把多余的南北极挤出屏幕
+      },
       "layer": [
         {
+          // 底图：只作为灰色轮廓参考
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "white", "strokeWidth": 0.5 }
+          "mark": { "type": "geoshape", "fill": "#f1f5f9", "stroke": "white", "strokeWidth": 0.5 }
         },
         {
+          // 数据层：只高亮有数据的国家
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
             { "lookup": "properties.name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
@@ -378,22 +385,34 @@
           ],
           "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 0.5 },
           "encoding": {
-            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "title": "Imports (RM Mil)" },
-            "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Country" }, { "field": "imports", "type": "quantitative", "title": "Imports", "format": ",.0f" }]
+            "color": {
+              "field": "imports",
+              "type": "quantitative",
+              "scale": { "scheme": "purples" }, // 进口用紫色，区分于出口的橙色
+              "legend": { "title": "Imports (RM)", "orient": "bottom" }
+            },
+            "tooltip": [
+              { "field": "properties.name", "type": "nominal", "title": "Origin Country" },
+              { "field": "imports", "type": "quantitative", "title": "Import Value (RM)", "format": ",.0f" }
+            ]
           }
         }
       ]
     };
 
-    // 5. Map: Export Destinations (Fixed missing background layer)
+    // 5. Map: Export Destinations (Pacific-Centered Regional Map)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 900, "height": 450,
-      "projection": { "type": "equalEarth" },
+      "width": "container", "height": 450,
+      "projection": {
+        "type": "naturalEarth1",
+        "rotate": [-150, 0, 0], // 必须和图 4 保持完全相同的视角
+        "scale": 160
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "white", "strokeWidth": 0.5 }
+          "mark": { "type": "geoshape", "fill": "#f1f5f9", "stroke": "white", "strokeWidth": 0.5 }
         },
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -403,8 +422,16 @@
           ],
           "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 0.5 },
           "encoding": {
-            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "title": "Exports (RM Mil)" },
-            "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Country" }, { "field": "exports", "type": "quantitative", "title": "Exports", "format": ",.0f" }]
+            "color": {
+              "field": "exports",
+              "type": "quantitative",
+              "scale": { "scheme": "oranges" },
+              "legend": { "title": "Exports (RM)", "orient": "bottom" }
+            },
+            "tooltip": [
+              { "field": "properties.name", "type": "nominal", "title": "Destination" },
+              { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "format": ",.0f" }
+            ]
           }
         }
       ]
