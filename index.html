@@ -88,7 +88,6 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
     }
 
-    /* 完美响应式双列网格，确保对比图表左右对称 */
     .grid-2-col {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -254,7 +253,7 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
-    // 1. Trend (Area + Brush) - 全宽自适应
+    // 1. Trend
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
@@ -284,10 +283,10 @@
       ]
     };
 
-    // 2. Donut Chart - 适配双列网格
+    // 2. Donut
     var specDonut = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 300,
+      "width": "container", "height": 280,
       "data": { "url": "export_categories.csv" },
       "mark": { "type": "arc", "innerRadius": 70, "stroke": "#fff", "strokeWidth": 2 },
       "encoding": {
@@ -300,10 +299,10 @@
       }
     };
 
-    // 3. The Assembly Line Reality - 适配双列网格
+    // 3. Line Imports vs Exports
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 300,
+      "width": "container", "height": 280,
       "data": { "url": "tech_trade_balance.csv" },
       "transform": [
         { "fold": ["exports", "imports"], "as": ["flow", "value"] },
@@ -348,11 +347,16 @@
       ]
     };
 
-    // 4. Map: Import Origins - 适配双列网格高度，精准 scale=110 避免越界
+    // 4. Map Import - 完美裁剪太平洋区域，修复图例遮挡
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
-      "projection": { "type": "naturalEarth1", "rotate": [-150, 0, 0], "scale": 110 },
+      "projection": {
+        "type": "equirectangular",
+        "rotate": [-150, 0, 0],
+        "center": [0, 15],
+        "scale": 220
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -367,7 +371,7 @@
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1.2 },
           "encoding": {
-            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 100 } },
+            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120, "labelFontSize": 10 } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Origin Country" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }]
           }
@@ -375,11 +379,16 @@
       ]
     };
 
-    // 5. Map: Export Destinations - 适配双列网格高度，精准 scale=110 避免越界
+    // 5. Map Export - 完美裁剪太平洋区域，修复图例遮挡
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
-      "projection": { "type": "naturalEarth1", "rotate": [-150, 0, 0], "scale": 110 },
+      "projection": {
+        "type": "equirectangular",
+        "rotate": [-150, 0, 0],
+        "center": [0, 15],
+        "scale": 220
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -394,7 +403,7 @@
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1.2 },
           "encoding": {
-            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 100 } },
+            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120, "labelFontSize": 10 } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Destination" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }]
           }
@@ -402,21 +411,21 @@
       ]
     };
 
-    // 6. Bar Chart - 适配双列网格
+    // 6. Bar Chart - 修复强行排序，绝对从高到低
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "export_destinations.csv" },
       "mark": { "type": "bar", "cornerRadiusEnd": 4 },
       "encoding": {
-        "y": { "field": "country", "type": "nominal", "sort": "-x", "title": null },
+        "y": { "field": "country", "type": "nominal", "sort": { "field": "exports", "order": "descending" }, "title": null },
         "x": { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "s" },
         "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
         "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "," }]
       }
     };
 
-    // 7. Stacked Bar - 适配双列网格
+    // 7. Stacked Bar
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
@@ -430,22 +439,22 @@
       }
     };
 
-    // 8. Bubble Scatter - 全宽自适应
+    // 8. Bubble Scatter - 缩小气泡上限，增加坐标轴 Padding 避免越界切边
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
       "data": { "url": "trade_balance.csv" },
       "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 },
       "encoding": {
-        "x": { "field": "imports", "type": "quantitative", "title": "Import Value (RM)", "format": "s" },
-        "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "format": "s" },
-        "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 3000] }, "legend": null },
+        "x": { "field": "imports", "type": "quantitative", "title": "Import Value (RM)", "format": "s", "scale": { "zero": true, "nice": true, "padding": 20 } },
+        "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "format": "s", "scale": { "zero": true, "nice": true, "padding": 20 } },
+        "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [50, 1500] }, "legend": null },
         "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" }, "legend": { "orient": "right", "title": "Country" } },
         "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "format": "," }, { "field": "imports", "type": "quantitative", "format": "," }]
       }
     };
 
-    // 9. Heatmap - 全宽自适应
+    // 9. Heatmap
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
@@ -458,13 +467,13 @@
       }
     };
 
-    // 10. Dashboard (Interactive Cross-filter) - 全宽自适应
+    // 10. Dashboard - 内部高度压缩，防止图表撑破卡片
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv" },
       "vconcat": [
         {
-          "width": "container", "height": 120, "title": "Click a Bar to Filter Trends",
+          "width": "container", "height": 80, "title": "Click a Bar to Filter Trends",
           "params": [{ "name": "category_click", "select": { "type": "point", "encodings": ["color"] } }],
           "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
@@ -474,7 +483,7 @@
           }
         },
         {
-          "width": "container", "height": 250,
+          "width": "container", "height": 200,
           "mark": { "type": "line", "point": { "size": 50, "filled": true } },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
