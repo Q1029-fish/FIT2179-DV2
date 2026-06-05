@@ -179,20 +179,18 @@
 
     <div class="chapter-header"><span>Act II:</span> The Global Supply Chain</div>
 
-    <div class="grid-2-col">
-      <div class="grid-card">
-        <h3>4. Import Origins</h3>
-        <p class="story-text">Focusing on the Pacific corridor, this map reveals our heavy reliance on East Asian
-          economies (China, Taiwan, Japan) for raw wafers and specialized machinery.</p>
-        <div id="vis-map-import" class="vis-container"></div>
-      </div>
+    <div class="chart-card">
+      <h3>4. Import Origins</h3>
+      <p class="story-text">This interactive map reveals our heavy reliance on global economies for raw wafers and
+        specialized machinery.</p>
+      <div id="vis-map-import" class="vis-container"></div>
+    </div>
 
-      <div class="grid-card">
-        <h3>5. Export Destinations</h3>
-        <p class="story-text">After assembly, products are funneled into consumer markets. Compare with imports to see
-          Malaysia's true function: a global transit hub for tech components.</p>
-        <div id="vis-map-export" class="vis-container"></div>
-      </div>
+    <div class="chart-card">
+      <h3>5. Export Destinations</h3>
+      <p class="story-text">After assembly, products are funneled into consumer markets. Compare with imports to see
+        Malaysia's true function: a global transit hub for tech components.</p>
+      <div id="vis-map-export" class="vis-container"></div>
     </div>
 
 
@@ -299,12 +297,13 @@
       }
     };
 
-    // 3. Line Imports vs Exports
+    // 3. Line Imports vs Exports (已修复截断至 2025 年)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 280,
       "data": { "url": "tech_trade_balance.csv" },
       "transform": [
+        { "filter": "year(datum.year) <= 2025 || datum.year <= 2025" }, // 彻底屏蔽2026数据
         { "fold": ["exports", "imports"], "as": ["flow", "value"] },
         { "calculate": "datum.flow == 'exports' ? 'Exports' : 'Imports'", "as": "FlowName" }
       ],
@@ -347,20 +346,15 @@
       ]
     };
 
-    // 4. Map Import - 完美裁剪太平洋区域，修复图例遮挡
+    // 4. Map Import - 恢复标准未裁剪世界地图
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 300,
-      "projection": {
-        "type": "equirectangular",
-        "rotate": [-150, 0, 0],
-        "center": [0, 15],
-        "scale": 220
-      },
+      "width": "container", "height": 400,
+      "projection": { "type": "naturalEarth1" }, // 完全未裁剪
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.8 }
+          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 }
         },
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -369,9 +363,9 @@
             { "filter": "datum.imports > 0" }
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
-          "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1.2 },
+          "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120, "labelFontSize": 10 } },
+            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200 } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Origin Country" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }]
           }
@@ -379,20 +373,15 @@
       ]
     };
 
-    // 5. Map Export - 完美裁剪太平洋区域，修复图例遮挡
+    // 5. Map Export - 恢复标准未裁剪世界地图
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 300,
-      "projection": {
-        "type": "equirectangular",
-        "rotate": [-150, 0, 0],
-        "center": [0, 15],
-        "scale": 220
-      },
+      "width": "container", "height": 400,
+      "projection": { "type": "naturalEarth1" }, // 完全未裁剪
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.8 }
+          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 }
         },
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -401,9 +390,9 @@
             { "filter": "datum.exports > 0" }
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
-          "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1.2 },
+          "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120, "labelFontSize": 10 } },
+            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200 } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Destination" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }]
           }
@@ -411,14 +400,19 @@
       ]
     };
 
-    // 6. Bar Chart - 修复强行排序，绝对从高到低
+    // 6. Bar Chart - 修复排序逻辑，强制以聚合量从大到小排
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "export_destinations.csv" },
       "mark": { "type": "bar", "cornerRadiusEnd": 4 },
       "encoding": {
-        "y": { "field": "country", "type": "nominal", "sort": { "field": "exports", "order": "descending" }, "title": null },
+        "y": {
+          "field": "country",
+          "type": "nominal",
+          "sort": { "field": "exports", "op": "sum", "order": "descending" }, // 强制计算sum排序，绝不出错
+          "title": null
+        },
         "x": { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "s" },
         "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
         "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "," }]
@@ -439,7 +433,7 @@
       }
     };
 
-    // 8. Bubble Scatter - 缩小气泡上限，增加坐标轴 Padding 避免越界切边
+    // 8. Bubble Scatter
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -467,9 +461,10 @@
       }
     };
 
-    // 10. Dashboard - 内部高度压缩，防止图表撑破卡片
+    // 10. Dashboard - 解决所有溢出问题的终极方案
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "autosize": { "type": "fit", "contains": "padding" }, // 这一行彻底锁死容器，绝不向右溢出
       "data": { "url": "product_trends.csv" },
       "vconcat": [
         {
@@ -478,7 +473,7 @@
           "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
             "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports" },
-            "y": { "field": "product", "type": "nominal", "title": null, "sort": "-x" },
+            "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" } },
             "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null }, "value": "#cbd5e1" }
           }
         },
