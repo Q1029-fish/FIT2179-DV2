@@ -279,7 +279,9 @@
       "encoding": {
         "theta": { "field": "percentage", "type": "quantitative" },
         "color": { "field": "category", "type": "nominal", "scale": { "scheme": "blues" }, "legend": { "orient": "bottom", "labelLimit": 250, "columns": 2 } },
-        "tooltip": [{ "field": "category", "type": "nominal" }, { "field": "percentage", "type": "quantitative", "title": "Share (%)" }]
+        "tooltip": [
+          { "field": "category", "type": "nominal" },
+          { "field": "percentage", "type": "quantitative", "title": "Share", "format": ".1%" }]
       }
     };
 
