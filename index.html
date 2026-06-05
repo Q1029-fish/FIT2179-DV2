@@ -528,35 +528,26 @@
       }
     };
 
-    // 10. Dashboard - 终极修复版
+    // 10. Dashboard - 终极稳健版 (已修复布局与交互)
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv", "format": { "type": "csv", "parse": { "exports": "number" } } },
       "vconcat": [
         {
           "width": 800, "height": 100, "title": "Click a Bar to Filter Trends",
-          "params": [{ "name": "category_click", "select": { "type": "point", "encodings": ["color"] } }],
+          "params": [{ "name": "category_click", "select": { "type": "point", "fields": ["product"] } }],
+          "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
-            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM)", "axis": { "format": "~s" } },
-            "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null }
-          },
-          "layer": [
-            {
-              "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
-              "encoding": {
-                "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null }, "value": "#cbd5e1" }
-              }
-            },
-            {
-              "mark": { "type": "text", "align": "left", "x": 10, "color": "#0f172a", "fontWeight": "bold", "pointerEvents": "none" },
-              "encoding": {
-                "text": { "field": "product", "type": "nominal" }
-              }
+            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports", "axis": { "format": "~s" } },
+            "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null },
+            "color": {
+              "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null },
+              "value": "#cbd5e1"
             }
-          ]
+          }
         },
         {
-          "width": 800, "height": 220,
+          "width": 800, "height": 200,
           "mark": { "type": "line", "point": { "size": 50, "filled": true } },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
