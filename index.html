@@ -88,6 +88,19 @@
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
     }
 
+    .full-width-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 40px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+      width: 100%;
+      box-sizing: border-box;
+      /* 确保 padding 不会撑破容器 */
+      overflow: hidden;
+      /* 防止内部元素溢出破坏布局 */
+    }
+
     .grid-2-col {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -181,8 +194,8 @@
 
     <div class="chart-card">
       <h3>4. Import Origins</h3>
-      <p class="story-text">This interactive map reveals our heavy reliance on global economies for raw wafers and
-        specialized machinery.</p>
+      <p class="story-text">This map reveals our heavy reliance on global economies for raw wafers and specialized
+        machinery, focusing primarily on the Pacific and Asian corridors.</p>
       <div id="vis-map-import" class="vis-container"></div>
     </div>
 
@@ -221,14 +234,14 @@
 
     <div class="chapter-header"><span>Act IV:</span> Rhythms & Exploration</div>
 
-    <div class="chart-card">
+    <div class="full-width-card">
       <h3>9. Seasonal Surges: When Does Export Peak?</h3>
       <p class="story-text">Tech manufacturing is highly cyclical. Notice the consistent darkening of colors towards the
         third and fourth quarters (Q3/Q4) as factories rush to meet global holiday demands.</p>
       <div id="vis-heatmap" class="vis-container"></div>
     </div>
 
-    <div class="chart-card">
+    <div class="full-width-card">
       <h3>10. Deep Dive Dashboard</h3>
       <p class="story-text"><strong>Click on any category bar</strong> in the top chart to filter and isolate its
         specific historical trend line below. Click the empty background to reset.</p>
@@ -297,13 +310,13 @@
       }
     };
 
-    // 3. Line Imports vs Exports (已修复截断至 2025 年)
+    // 3. Line Imports vs Exports
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 280,
       "data": { "url": "tech_trade_balance.csv" },
       "transform": [
-        { "filter": "year(datum.year) <= 2025 || datum.year <= 2025" }, // 彻底屏蔽2026数据
+        { "filter": "year(datum.year) <= 2025 || datum.year <= 2025" },
         { "fold": ["exports", "imports"], "as": ["flow", "value"] },
         { "calculate": "datum.flow == 'exports' ? 'Exports' : 'Imports'", "as": "FlowName" }
       ],
@@ -346,11 +359,15 @@
       ]
     };
 
-    // 4. Map Import - 恢复标准未裁剪世界地图
+    // 4. Map Import - 聚焦右侧 (亚洲到北美)，图例数字简写(s)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1" }, // 完全未裁剪
+      "projection": {
+        "type": "naturalEarth1",
+        "scale": 350,
+        "center": [120, 15] // 聚焦在亚洲东部和太平洋区域
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -365,7 +382,18 @@
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200 } },
+            "color": {
+              "field": "imports",
+              "type": "quantitative",
+              "scale": { "scheme": "purples" },
+              "legend": {
+                "title": "Imports (RM)",
+                "orient": "bottom",
+                "direction": "horizontal",
+                "gradientLength": 200,
+                "format": "s" // 图例数字简写 (例如 100G)
+              }
+            },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Origin Country" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }]
           }
@@ -373,11 +401,15 @@
       ]
     };
 
-    // 5. Map Export - 恢复标准未裁剪世界地图
+    // 5. Map Export - 聚焦右侧 (亚洲到北美)，图例数字简写(s)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1" }, // 完全未裁剪
+      "projection": {
+        "type": "naturalEarth1",
+        "scale": 350,
+        "center": [120, 15] // 聚焦在亚洲东部和太平洋区域
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -392,7 +424,18 @@
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200 } },
+            "color": {
+              "field": "exports",
+              "type": "quantitative",
+              "scale": { "scheme": "oranges" },
+              "legend": {
+                "title": "Exports (RM)",
+                "orient": "bottom",
+                "direction": "horizontal",
+                "gradientLength": 200,
+                "format": "s" // 图例数字简写 (例如 100G)
+              }
+            },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Destination" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }]
           }
@@ -410,7 +453,7 @@
         "y": {
           "field": "country",
           "type": "nominal",
-          "sort": { "field": "exports", "op": "sum", "order": "descending" }, // 强制计算sum排序，绝不出错
+          "sort": { "field": "exports", "op": "sum", "order": "descending" },
           "title": null
         },
         "x": { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "s" },
@@ -464,21 +507,21 @@
     // 10. Dashboard - 解决所有溢出问题的终极方案
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "autosize": { "type": "fit", "contains": "padding" }, // 这一行彻底锁死容器，绝不向右溢出
+      "autosize": { "type": "fit", "contains": "padding" },
       "data": { "url": "product_trends.csv" },
       "vconcat": [
         {
-          "width": "container", "height": 80, "title": "Click a Bar to Filter Trends",
+          "width": "container", "height": 100, "title": "Click a Bar to Filter Trends",
           "params": [{ "name": "category_click", "select": { "type": "point", "encodings": ["color"] } }],
           "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
-            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports" },
+            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports", "axis": { "format": "s" } },
             "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" } },
             "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null }, "value": "#cbd5e1" }
           }
         },
         {
-          "width": "container", "height": 200,
+          "width": "container", "height": 220,
           "mark": { "type": "line", "point": { "size": 50, "filled": true } },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
