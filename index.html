@@ -175,21 +175,19 @@
 
   <div class="chapter-header"><span>Act II:</span> The Global Supply Chain</div>
 
-  <div class="grid-2-col">
+  <div class="chart-card">
+    <h3>4. Import origins</h3>
+    <p class="story-text">Focusing on the Pacific corridor, this map reveals our heavy reliance on East Asian economies
+      (China, Taiwan, Japan) for raw wafers and specialized machinery.</p>
+    <div id="vis-map-import" class="vis-container"></div>
+  </div>
 
-    <div class="grid-card">
-      <h3>4. Import Origins</h3>
-      <p class="story-text">Focusing on the Pacific corridor, this map reveals our heavy reliance on East Asian
-        economies (China, Taiwan, Japan) for raw wafers and specialized machinery.</p>
-      <div id="vis-map-import" class="vis-container"></div>
-    </div>
-
-    <div class="grid-card">
-      <h3>5. Export Destinations</h3>
-      <p class="story-text">After assembly, products are funneled into the massive consumer markets. Compare with
-        imports to see Malaysia's true function: a global transit hub.</p>
-      <div id="vis-map-export" class="vis-container"></div>
-    </div>
+  <div class="chart-card">
+    <h3>5. Export Destinations</h3>
+    <p class="story-text">After assembly, products are funneled into the massive consumer markets. Compare with imports
+      to see Malaysia's true function: a global transit hub.</p>
+    <div id="vis-map-export" class="vis-container"></div>
+  </div>
 
   </div>
 
@@ -364,24 +362,21 @@
       ]
     };
 
-    // 4. Map: Import Origins (High Contrast, Hover Highlight, Pacific Centered)
+    // 4. Map: Import Origins (Full Width Layout)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 350,
+      "width": "container", "height": 350, // 恢复全屏应有的高度
       "projection": {
         "type": "naturalEarth1",
-        "rotate": [-150, 0, 0], // 把太平洋放中间，完美连接大马的亚洲和北美贸易链
-        "scale": 150
+        "rotate": [-150, 0, 0],
+        "scale": 160 // 放大视野，铺满全宽卡片
       },
       "layer": [
         {
-          // 底层：高对比度底图
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          // 将边界线改为深灰色 (#64748b)，底色改为浅灰蓝，彻底解决边界模糊问题
           "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.8 }
         },
         {
-          // 表层：有数据的国家
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
             { "lookup": "properties.name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
@@ -391,36 +386,35 @@
             "name": "hover",
             "select": { "type": "point", "on": "mouseover", "clear": "mouseout" }
           }],
-          // 有数据的国家边界线变成极深的颜色，视觉冲击更强
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1.2 },
           "encoding": {
             "color": {
               "field": "imports",
               "type": "quantitative",
               "scale": { "scheme": "purples" },
-              "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120 }
+              "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 150 }
             },
             "opacity": {
               "condition": { "param": "hover", "empty": false, "value": 1 },
-              "value": 0.7 // 鼠标悬停时透明度变化，提供交互反馈
+              "value": 0.7
             },
             "tooltip": [
               { "field": "properties.name", "type": "nominal", "title": "Origin Country" },
-              { "field": "imports", "type": "quantitative", "title": "Import Value (RM)", "format": ",.0f" }
+              { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }
             ]
           }
         }
       ]
     };
 
-    // 5. Map: Export Destinations (High Contrast, Hover Highlight, Pacific Centered)
+    // 5. Map: Export Destinations (Full Width Layout)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 350,
       "projection": {
         "type": "naturalEarth1",
         "rotate": [-150, 0, 0],
-        "scale": 150
+        "scale": 160
       },
       "layer": [
         {
@@ -443,7 +437,7 @@
               "field": "exports",
               "type": "quantitative",
               "scale": { "scheme": "oranges" },
-              "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120 }
+              "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 150 }
             },
             "opacity": {
               "condition": { "param": "hover", "empty": false, "value": 1 },
@@ -451,7 +445,7 @@
             },
             "tooltip": [
               { "field": "properties.name", "type": "nominal", "title": "Destination" },
-              { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "format": ",.0f" }
+              { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }
             ]
           }
         }
