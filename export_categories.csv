@@ -1,6 +1,11 @@
-category,percentage
-Integrated Circuits (Chips),65
-Electrical Machinery,15
-Telecommunications,10
-Office Machine Parts,7
-Other E&E Products,3
+category,percentage,exports
+Machinery & Transport (E&E),0.5030396219983525,808119591182.0
+Mineral Fuels (Petroleum/LNG),0.1116014901709828,179284785270.0
+Misc. Manufactured Articles,0.11155293342211736,179206780162.0
+Manufactured Goods,0.08298244390001627,133309058983.0
+Chemicals,0.06780219318492473,108922395457.0
+Animal/Veg Oils (Palm Oil),0.05503968300914919,88419766927.0
+Food & Live Animals,0.03664387718862745,58867400813.0
+Crude Materials,0.021131284382851053,33946838678.0
+Others,0.008431463425906989,13544918688.0
+Beverages & Tobacco,0.001775009317071619,2851504615.0
