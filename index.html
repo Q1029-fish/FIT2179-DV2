@@ -173,22 +173,20 @@
   </div>
 
   <!-- ACT 2: Global Supply Chain (The Maps) -->
-  <div class="chapter-header"><span>Act II:</span> The Global Supply Chain</div>
+  <div class="grid-2-col">
+    <div class="chart-card">
+      <h3>4. Origin of Assembly: Where Do We Import From?</h3>
+      <p class="story-text">Hover and scroll to zoom. This interactive choropleth reveals our reliance on East Asian
+        economies (China, Taiwan, Japan) for raw wafers and specialized machinery.</p>
+      <div id="vis-map-import" class="vis-container"></div>
+    </div>
 
-  <div class="chart-card">
-    <h3>4. Origin of Assembly: Where Do We Import From?</h3>
-    <p class="story-text">Malaysia does not manufacture all raw materials. This choropleth map focuses on the Pacific
-      trade corridor, revealing our heavy reliance on East Asian economies (China, Taiwan, Japan) for raw wafers and
-      specialized machinery.</p>
-    <div id="vis-map-import" class="vis-container"></div>
-  </div>
-
-  <div class="chart-card">
-    <h3>5. Export Destinations: Where Do We Sell?</h3>
-    <p class="story-text">After testing and packaging, the finished chips are distributed. Compare this map with the
-      imports above to see Malaysia's true function: funneling Asian components into the massive consumer markets of the
-      US and Singapore.</p>
-    <div id="vis-map-export" class="vis-container"></div>
+    <div class="chart-card">
+      <h3>5. Export Destinations: Where Do We Sell?</h3>
+      <p class="story-text">Hover and scroll to zoom. Compare this map with the imports to see Malaysia's true function:
+        funneling Asian components into the massive consumer markets of the US and Singapore.</p>
+      <div id="vis-map-export" class="vis-container"></div>
+    </div>
   </div>
 
   <!-- ACT 3: Power Dynamics -->
@@ -362,34 +360,48 @@
       ]
     };
 
-    // 4. Map: Import Origins (Pacific-Centered Local Map)
+    // 4. Map: Import Origins (Interactive & High Contrast)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 400,
-      "projection": {
-        "type": "equirectangular",
-        "rotate": [-150, 0, 0], // 经度旋转：将太平洋放中间
-        "center": [0, 15],      // 纬度中心：往北半球挪动15度，裁掉庞大无用的南冰洋
-        "scale": 280            // 暴力放大：原来是 160，现在放大接近一倍，挤掉边缘无用信息
-      },
+      "width": "container", "height": 350,
+      // 使用自然地球投影，不限制视角，让用户自己探索
+      "projection": { "type": "naturalEarth1" },
+      // 开启全图的鼠标拖拽平移和滚轮缩放交互
+      "params": [{
+        "name": "zoom_pan",
+        "select": { "type": "interval", "bind": "scales" }
+      }],
       "layer": [
         {
+          // 第 1 层：高对比度底图
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#f1f5f9", "stroke": "white", "strokeWidth": 0.5 }
+          // 颜色加深为浅灰蓝，边界线加粗并调深，彻底解决交界看不清的问题
+          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#94a3b8", "strokeWidth": 0.8 }
         },
         {
+          // 第 2 层：数据映射与悬停高亮
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
             { "lookup": "properties.name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
             { "filter": "datum.imports > 0" }
           ],
-          "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 0.8 },
+          // 加入 hover 参数
+          "params": [{
+            "name": "hover",
+            "select": { "type": "point", "on": "mouseover", "clear": "mouseout" }
+          }],
+          "mark": { "type": "geoshape", "stroke": "#475569", "strokeWidth": 1 }, // 数据国家的边界线更深
           "encoding": {
             "color": {
               "field": "imports",
               "type": "quantitative",
               "scale": { "scheme": "purples" },
-              "legend": { "title": "Imports (RM)", "orient": "bottom-right", "direction": "horizontal" }
+              "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120 }
+            },
+            // 鼠标悬停时，稍微改变透明度，增强交互反馈
+            "opacity": {
+              "condition": { "param": "hover", "empty": false, "value": 1 },
+              "value": 0.8
             },
             "tooltip": [
               { "field": "properties.name", "type": "nominal", "title": "Origin Country" },
@@ -400,20 +412,19 @@
       ]
     };
 
-    // 5. Map: Export Destinations (Pacific-Centered Local Map)
+    // 5. Map: Export Destinations (Interactive & High Contrast)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 400,
-      "projection": {
-        "type": "equirectangular",
-        "rotate": [-150, 0, 0], // 保持和图 4 绝对对齐
-        "center": [0, 15],
-        "scale": 280
-      },
+      "width": "container", "height": 350,
+      "projection": { "type": "naturalEarth1" },
+      "params": [{
+        "name": "zoom_pan",
+        "select": { "type": "interval", "bind": "scales" }
+      }],
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#f1f5f9", "stroke": "white", "strokeWidth": 0.5 }
+          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#94a3b8", "strokeWidth": 0.8 }
         },
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -421,13 +432,21 @@
             { "lookup": "properties.name", "from": { "data": { "url": "export_destinations.csv" }, "key": "country", "fields": ["exports"] } },
             { "filter": "datum.exports > 0" }
           ],
-          "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 0.8 },
+          "params": [{
+            "name": "hover",
+            "select": { "type": "point", "on": "mouseover", "clear": "mouseout" }
+          }],
+          "mark": { "type": "geoshape", "stroke": "#475569", "strokeWidth": 1 },
           "encoding": {
             "color": {
               "field": "exports",
               "type": "quantitative",
               "scale": { "scheme": "oranges" },
-              "legend": { "title": "Exports (RM)", "orient": "bottom-right", "direction": "horizontal" }
+              "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120 }
+            },
+            "opacity": {
+              "condition": { "param": "hover", "empty": false, "value": 1 },
+              "value": 0.8
             },
             "tooltip": [
               { "field": "properties.name", "type": "nominal", "title": "Destination" },
