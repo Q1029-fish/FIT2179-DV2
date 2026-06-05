@@ -87,7 +87,6 @@
       margin-bottom: 30px;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
       overflow-x: auto;
-      /* 保证卡片内大尺寸图表不会溢出破坏网页布局 */
     }
 
     .grid-2-col {
@@ -253,13 +252,13 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
-    // 1. Trend (强制固定宽度850，防止溢出)
+    // 1. Trend (完全释放为 container，不再锁死宽度)
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
       "vconcat": [
         {
-          "width": 850, "height": 350,
+          "width": "container", "height": 350,
           "encoding": {
             "x": { "field": "date", "type": "temporal", "scale": { "domain": { "param": "brush" } }, "axis": { "title": "Year", "grid": false } },
             "y": { "field": "exports", "type": "quantitative", "axis": { "title": "Export Value (RM)", "format": "s" } }
@@ -272,7 +271,7 @@
           ]
         },
         {
-          "width": 850, "height": 40,
+          "width": "container", "height": 40,
           "mark": { "type": "area", "color": "rgba(37, 99, 235, 0.2)" },
           "params": [{ "name": "brush", "select": { "type": "interval", "encodings": ["x"] } }],
           "encoding": {
@@ -299,7 +298,7 @@
       }
     };
 
-    // 3. Line Imports vs Exports (简写大额数字)
+    // 3. Line Imports vs Exports (时间线截取至2025年)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 280,
@@ -348,13 +347,13 @@
       ]
     };
 
-    // 4. Map Import - 通过Center和Scale锁定右侧(东半球)，图例采用"s"简写
+    // 4. Map Import
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
       "projection": {
         "type": "mercator",
-        "center": [100, 10], // 镜头对准经度100(亚洲), 强行展示右半边区域
+        "center": [100, 10],
         "scale": 250
       },
       "layer": [
@@ -384,13 +383,13 @@
       ]
     };
 
-    // 5. Map Export - 通过Center和Scale锁定右侧(东半球)，图例采用"s"简写
+    // 5. Map Export
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
       "projection": {
         "type": "mercator",
-        "center": [100, 10], // 镜头对准经度100(亚洲), 强行展示右半边区域
+        "center": [100, 10],
         "scale": 250
       },
       "layer": [
@@ -420,26 +419,45 @@
       ]
     };
 
-    // 6. Bar Chart - 图例和tooltip简写大额数字
+    // 6. Bar Chart - 文字放进柱子，X轴数字加上 format: "s"
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "export_destinations.csv" },
-      "mark": { "type": "bar", "cornerRadiusEnd": 4 },
       "encoding": {
         "y": {
           "field": "country",
           "type": "nominal",
           "sort": { "field": "exports", "op": "sum", "order": "descending" },
-          "title": null
+          "title": null,
+          "axis": null // 隐藏原有的外侧文字
         },
-        "x": { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "s" },
-        "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
-        "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "s" }]
-      }
+        "x": {
+          "field": "exports",
+          "type": "quantitative",
+          "title": "Exports (RM)",
+          "axis": { "format": "s" } // 让 X 轴的数字变成 50G, 100G 简写
+        }
+      },
+      "layer": [
+        {
+          "mark": { "type": "bar", "cornerRadiusEnd": 4 },
+          "encoding": {
+            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
+            "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "s" }]
+          }
+        },
+        {
+          // 这里把类别文字强制塞进柱子左侧
+          "mark": { "type": "text", "align": "left", "x": 10, "color": "white", "fontWeight": "bold", "pointerEvents": "none" },
+          "encoding": {
+            "text": { "field": "country", "type": "nominal" }
+          }
+        }
+      ]
     };
 
-    // 7. Stacked Bar - 简写Tooltip
+    // 7. Stacked Bar
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
@@ -453,25 +471,25 @@
       }
     };
 
-    // 8. Bubble Scatter - 强制宽度850，简写数值
+    // 8. Bubble Scatter - 完全释放宽度为 container，并在坐标轴应用 format: "s"
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 850, "height": 400,
+      "width": "container", "height": 400,
       "data": { "url": "trade_balance.csv" },
       "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 },
       "encoding": {
-        "x": { "field": "imports", "type": "quantitative", "title": "Import Value (RM)", "format": "s", "scale": { "zero": true, "nice": true, "padding": 20 } },
-        "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "format": "s", "scale": { "zero": true, "nice": true, "padding": 20 } },
+        "x": { "field": "imports", "type": "quantitative", "title": "Import Value (RM)", "axis": { "format": "s" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
+        "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "axis": { "format": "s" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
         "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [50, 1500] }, "legend": null },
         "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" }, "legend": { "orient": "right", "title": "Country" } },
         "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "title": "Exports", "format": "s" }, { "field": "imports", "type": "quantitative", "title": "Imports", "format": "s" }]
       }
     };
 
-    // 9. Heatmap - 强制宽度850
+    // 9. Heatmap - 释放为 container
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 850, "height": 200,
+      "width": "container", "height": 200,
       "data": { "url": "seasonal_heatmap.csv" },
       "mark": { "type": "rect", "tooltip": true, "cornerRadius": 2 },
       "encoding": {
@@ -481,23 +499,36 @@
       }
     };
 
-    // 10. Dashboard - 将内部固定宽度改为850，确保完全不会溢出卡片边界，并且简写大额数字
+    // 10. Dashboard - 删除 autosize 防溢出锁，完全靠自适应，文字放进柱子
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv" },
       "vconcat": [
         {
-          "width": 850, "height": 80, "title": "Click a Bar to Filter Trends",
+          "width": "container", "height": 100, "title": "Click a Bar to Filter Trends",
           "params": [{ "name": "category_click", "select": { "type": "point", "encodings": ["color"] } }],
-          "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
             "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports", "axis": { "format": "s" } },
-            "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" } },
-            "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null }, "value": "#cbd5e1" }
-          }
+            "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null } // 隐藏原Y轴
+          },
+          "layer": [
+            {
+              "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
+              "encoding": {
+                "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null }, "value": "#cbd5e1" }
+              }
+            },
+            {
+              // 文字强制刻在柱子内部
+              "mark": { "type": "text", "align": "left", "x": 10, "color": "#0f172a", "fontWeight": "bold", "pointerEvents": "none" },
+              "encoding": {
+                "text": { "field": "product", "type": "nominal" }
+              }
+            }
+          ]
         },
         {
-          "width": 850, "height": 200,
+          "width": "container", "height": 220,
           "mark": { "type": "line", "point": { "size": 50, "filled": true } },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
