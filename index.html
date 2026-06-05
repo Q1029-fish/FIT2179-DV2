@@ -293,13 +293,17 @@
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "tech_trade_balance.csv" },
-      "mark": { "type": "line", "point": true, "strokeWidth": 3 },
       "encoding": {
         "x": {
           "field": "year",
-          "type": "ordinal", // 改为 ordinal，彻底抛弃日期的强行补全
+          "type": "temporal",   // 恢复 temporal，让 Vega 自动计算合理的刻度间距
+          "timeUnit": "year",
           "title": "Year",
-          "axis": { "grid": false, "labelAngle": 0 }
+          "axis": {
+            "grid": false,
+            "format": "%Y",    // 【关键修复】强制只显示 4 位数年份，绝不显示月份
+            "tickCount": 6     // 建议只显示大约 6 个年份刻度，保持清爽
+          }
         },
         "y": {
           "field": "value",
@@ -312,13 +316,46 @@
           "type": "nominal",
           "scale": { "domain": ["Exports", "Imports"], "range": ["#2563eb", "#f59e0b"] },
           "legend": { "orient": "bottom", "title": null }
+        }
+      },
+      // 使用图层 (layer) 来构建悬浮交互组件
+      "layer": [
+        {
+          // 第 1 层：画出基础的折线
+          "mark": { "type": "line", "strokeWidth": 3 }
         },
-        "tooltip": [
-          { "field": "year", "type": "ordinal", "title": "Year" }, // Tooltip 也会显示纯数字
-          { "field": "flow", "type": "nominal", "title": "Trade Flow" },
-          { "field": "value", "type": "quantitative", "title": "Value (RM)", "format": "," }
-        ]
-      }
+        {
+          // 第 2 层：隐形的触发点，用于捕捉鼠标悬停 (Hover)
+          "params": [{
+            "name": "hover",
+            "select": {
+              "type": "point",
+              "fields": ["year"], // 捕捉相同的年份
+              "nearest": true,    // 自动吸附到最近的数据点
+              "on": "mouseover",
+              "clear": "mouseout"
+            }
+          }],
+          "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" },
+          "encoding": {
+            "tooltip": [
+              { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "format": "%Y" }, // Tooltip 也强制只显示年份
+              { "field": "flow", "type": "nominal", "title": "Trade Flow" },
+              { "field": "value", "type": "quantitative", "title": "Value (RM)", "format": ",.0f" }
+            ]
+          }
+        },
+        {
+          // 第 3 层：当鼠标悬停时，出现垂直虚线 (Rule)
+          "transform": [{ "filter": { "param": "hover", "empty": false } }],
+          "mark": { "type": "rule", "color": "#64748b", "strokeDash": [4, 4], "strokeWidth": 1.5 }
+        },
+        {
+          // 第 4 层：当鼠标悬停时，对应的数据点出现实心小圆圈
+          "transform": [{ "filter": { "param": "hover", "empty": false } }],
+          "mark": { "type": "circle", "size": 70 }
+        }
+      ]
     };
 
     // 4. Map: Import Origins (Fixed missing background layer)
