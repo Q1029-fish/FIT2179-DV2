@@ -163,10 +163,13 @@
           Transport" sector, the absolute engine is raw Electronic & Electrical components.</p>
         <div id="vis-donut" class="vis-container"></div>
       </div>
+
       <div class="grid-card">
-        <h3>3. Category Trends</h3>
-        <p class="story-text">Stripping away the noise: Integrated Circuits (Microchips) are the uncontested pioneers
-          driving the recent surge, leaving other sub-sectors relatively flat.</p>
+        <h3>3. The Assembly Line Reality: Imports vs. Exports</h3>
+        <p class="story-text">A massive export engine requires massive fuel. Looking solely at the Tech & Machinery
+          sector (SITC 7), we see imports mirroring exports almost perfectly. This reveals Malaysia's true role: a
+          critical global hub for testing and assembly, adding value to imported components before re-exporting them.
+        </p>
         <div id="vis-line" class="vis-container"></div>
       </div>
     </div>
@@ -286,16 +289,37 @@
     };
 
     // 3. Multi-line Chart
+    // 3. The Assembly Line Reality (Exports vs Imports for SITC 7)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
-      "data": { "url": "product_trends.csv" },
-      "mark": { "type": "line", "point": true },
+      "data": { "url": "tech_trade_balance.csv" },
+      "mark": { "type": "line", "point": true, "strokeWidth": 3 },
       "encoding": {
-        "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
-        "y": { "field": "exports", "type": "quantitative", "title": "Export Value", "format": "s" },
-        "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "orient": "bottom", "labelLimit": 200 } },
-        "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year" }, { "field": "product", "type": "nominal" }, { "field": "exports", "type": "quantitative", "format": "," }]
+        "x": {
+          "field": "year",
+          "type": "temporal",
+          "timeUnit": "year",
+          "title": "Year",
+          "axis": { "grid": false }
+        },
+        "y": {
+          "field": "value",
+          "type": "quantitative",
+          "title": "Trade Value (RM)",
+          "format": "s"
+        },
+        "color": {
+          "field": "flow",
+          "type": "nominal",
+          "scale": { "domain": ["Exports", "Imports"], "range": ["#2563eb", "#f59e0b"] }, // 蓝底代表出口，橙色代表进口
+          "legend": { "orient": "bottom", "title": null }
+        },
+        "tooltip": [
+          { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+          { "field": "flow", "type": "nominal", "title": "Trade Flow" },
+          { "field": "value", "type": "quantitative", "title": "Value (RM)", "format": "," }
+        ]
       }
     };
 
