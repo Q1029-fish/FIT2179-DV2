@@ -1,16 +1,16 @@
 year,product,exports
-2019-01-01,Integrated Circuits,230000
-2020-01-01,Integrated Circuits,245000
-2021-01-01,Integrated Circuits,290000
-2022-01-01,Integrated Circuits,380000
-2023-01-01,Integrated Circuits,370000
-2019-01-01,Electronic Components,80000
-2020-01-01,Electronic Components,82000
-2021-01-01,Electronic Components,95000
-2022-01-01,Electronic Components,120000
-2023-01-01,Electronic Components,115000
-2019-01-01,Telecommunications,62000
-2020-01-01,Telecommunications,59000
-2021-01-01,Telecommunications,70000
-2022-01-01,Telecommunications,93000
-2023-01-01,Telecommunications,90000
+2021,Integrated Circuits,950000000000
+2021,Electronic Components,450000000000
+2021,Telecommunications,300000000000
+2022,Integrated Circuits,1150000000000
+2022,Electronic Components,520000000000
+2022,Telecommunications,320000000000
+2023,Integrated Circuits,1250000000000
+2023,Electronic Components,550000000000
+2023,Telecommunications,330000000000
+2024,Integrated Circuits,1400000000000
+2024,Electronic Components,580000000000
+2024,Telecommunications,350000000000
+2025,Integrated Circuits,1550000000000
+2025,Electronic Components,600000000000
+2025,Telecommunications,380000000000

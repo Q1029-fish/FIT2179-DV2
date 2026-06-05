@@ -512,16 +512,16 @@
       }
     };
 
-    // 10. Dashboard
+    // 10. Dashboard - 终极修复版
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": { "url": "product_trends.csv" },
+      "data": { "url": "product_trends.csv", "format": { "type": "csv", "parse": { "exports": "number" } } },
       "vconcat": [
         {
-          "width": "container", "height": 100, "title": "Click a Bar to Filter Trends",
+          "width": 800, "height": 100, "title": "Click a Bar to Filter Trends",
           "params": [{ "name": "category_click", "select": { "type": "point", "encodings": ["color"] } }],
           "encoding": {
-            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports", "axis": { "format": "~s" } }, // 使用 ~s 裁剪无用0
+            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM)", "axis": { "format": "~s" } },
             "y": { "field": "product", "type": "nominal", "title": null, "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null }
           },
           "layer": [
@@ -540,11 +540,11 @@
           ]
         },
         {
-          "width": "container", "height": 220,
+          "width": 800, "height": 220,
           "mark": { "type": "line", "point": { "size": 50, "filled": true } },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
-            "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "axis": { "format": "~s" } }, // 使用 ~s 裁剪无用0
+            "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "axis": { "format": "~s" } },
             "color": { "field": "product", "type": "nominal", "legend": null },
             "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 }
           }
