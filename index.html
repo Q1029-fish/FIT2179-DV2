@@ -360,37 +360,35 @@
       ]
     };
 
-    // 4. Map: Import Origins (Interactive & High Contrast)
+    // 4. Map: Import Origins (High Contrast, Hover Highlight, Pacific Centered)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 350,
-      // 使用自然地球投影，不限制视角，让用户自己探索
-      "projection": { "type": "naturalEarth1" },
-      // 开启全图的鼠标拖拽平移和滚轮缩放交互
-      "params": [{
-        "name": "zoom_pan",
-        "select": { "type": "interval", "bind": "scales" }
-      }],
+      "projection": {
+        "type": "naturalEarth1",
+        "rotate": [-150, 0, 0], // 把太平洋放中间，完美连接大马的亚洲和北美贸易链
+        "scale": 150
+      },
       "layer": [
         {
-          // 第 1 层：高对比度底图
+          // 底层：高对比度底图
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          // 颜色加深为浅灰蓝，边界线加粗并调深，彻底解决交界看不清的问题
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#94a3b8", "strokeWidth": 0.8 }
+          // 将边界线改为深灰色 (#64748b)，底色改为浅灰蓝，彻底解决边界模糊问题
+          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.8 }
         },
         {
-          // 第 2 层：数据映射与悬停高亮
+          // 表层：有数据的国家
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
             { "lookup": "properties.name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
             { "filter": "datum.imports > 0" }
           ],
-          // 加入 hover 参数
           "params": [{
             "name": "hover",
             "select": { "type": "point", "on": "mouseover", "clear": "mouseout" }
           }],
-          "mark": { "type": "geoshape", "stroke": "#475569", "strokeWidth": 1 }, // 数据国家的边界线更深
+          // 有数据的国家边界线变成极深的颜色，视觉冲击更强
+          "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1.2 },
           "encoding": {
             "color": {
               "field": "imports",
@@ -398,10 +396,9 @@
               "scale": { "scheme": "purples" },
               "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 120 }
             },
-            // 鼠标悬停时，稍微改变透明度，增强交互反馈
             "opacity": {
               "condition": { "param": "hover", "empty": false, "value": 1 },
-              "value": 0.8
+              "value": 0.7 // 鼠标悬停时透明度变化，提供交互反馈
             },
             "tooltip": [
               { "field": "properties.name", "type": "nominal", "title": "Origin Country" },
@@ -412,19 +409,19 @@
       ]
     };
 
-    // 5. Map: Export Destinations (Interactive & High Contrast)
+    // 5. Map: Export Destinations (High Contrast, Hover Highlight, Pacific Centered)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 350,
-      "projection": { "type": "naturalEarth1" },
-      "params": [{
-        "name": "zoom_pan",
-        "select": { "type": "interval", "bind": "scales" }
-      }],
+      "projection": {
+        "type": "naturalEarth1",
+        "rotate": [-150, 0, 0],
+        "scale": 150
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#94a3b8", "strokeWidth": 0.8 }
+          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.8 }
         },
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -436,7 +433,7 @@
             "name": "hover",
             "select": { "type": "point", "on": "mouseover", "clear": "mouseout" }
           }],
-          "mark": { "type": "geoshape", "stroke": "#475569", "strokeWidth": 1 },
+          "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1.2 },
           "encoding": {
             "color": {
               "field": "exports",
@@ -446,7 +443,7 @@
             },
             "opacity": {
               "condition": { "param": "hover", "empty": false, "value": 1 },
-              "value": 0.8
+              "value": 0.7
             },
             "tooltip": [
               { "field": "properties.name", "type": "nominal", "title": "Destination" },
