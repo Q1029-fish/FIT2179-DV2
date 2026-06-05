@@ -288,7 +288,6 @@
       }
     };
 
-    // 3. Multi-line Chart
     // 3. The Assembly Line Reality (Exports vs Imports for SITC 7)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -298,10 +297,9 @@
       "encoding": {
         "x": {
           "field": "year",
-          "type": "temporal",
-          "timeUnit": "year",
+          "type": "ordinal", // 改为 ordinal，彻底抛弃日期的强行补全
           "title": "Year",
-          "axis": { "grid": false }
+          "axis": { "grid": false, "labelAngle": 0 }
         },
         "y": {
           "field": "value",
@@ -312,11 +310,11 @@
         "color": {
           "field": "flow",
           "type": "nominal",
-          "scale": { "domain": ["Exports", "Imports"], "range": ["#2563eb", "#f59e0b"] }, // 蓝底代表出口，橙色代表进口
+          "scale": { "domain": ["Exports", "Imports"], "range": ["#2563eb", "#f59e0b"] },
           "legend": { "orient": "bottom", "title": null }
         },
         "tooltip": [
-          { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+          { "field": "year", "type": "ordinal", "title": "Year" }, // Tooltip 也会显示纯数字
           { "field": "flow", "type": "nominal", "title": "Trade Flow" },
           { "field": "value", "type": "quantitative", "title": "Value (RM)", "format": "," }
         ]
