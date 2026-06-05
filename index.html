@@ -484,25 +484,41 @@
       }
     };
 
-    // 9. Heatmap - 彻底修复数值太小和格式化问题
+    // 9. Heatmap - 彻底修复横坐标水平显示
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
-      "data": {
-        "url": "seasonal_heatmap.csv",
-        // 关键修复 1：强制将 exports 解析为纯数字
-        "format": { "type": "csv", "parse": { "exports": "number" } }
-      },
+      "data": { "url": "seasonal_heatmap.csv" },
       "mark": { "type": "rect", "tooltip": true, "cornerRadius": 2 },
       "encoding": {
-        "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "title": "Month", "labelAngle": 0 },
-        "y": { "field": "year", "type": "ordinal", "title": "Year" },
+        "x": {
+          "field": "month",
+          "type": "ordinal",
+          "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+          "title": "Month",
+          "axis": {
+            "labelAngle": 0,           // 1. 强制设为0度
+            "labelAlign": "center",    // 2. 居中对齐
+            "labelBaseline": "top",    // 3. 基线在顶部
+            "domain": false,
+            "ticks": false
+          }
+        },
+        "y": {
+          "field": "year",
+          "type": "ordinal",
+          "title": "Year",
+          "axis": { "domain": false, "ticks": false }
+        },
         "color": {
           "field": "exports",
           "type": "quantitative",
           "scale": { "scheme": "oranges" },
-          // 关键修复 2：使用 ~s 格式化巨大数字（例如 60,000,000,000 会变成 60G）
-          "legend": { "title": "Exports (RM)", "format": "~s", "gradientLength": 150 }
+          "legend": {
+            "title": "Exports (RM)",
+            "format": "~s",
+            "gradientLength": 150
+          }
         },
         "tooltip": [
           { "field": "year", "type": "ordinal", "title": "Year" },
