@@ -484,16 +484,31 @@
       }
     };
 
-    // 9. Heatmap
+    // 9. Heatmap - 彻底修复数值太小和格式化问题
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
-      "data": { "url": "seasonal_heatmap.csv" },
+      "data": {
+        "url": "seasonal_heatmap.csv",
+        // 关键修复 1：强制将 exports 解析为纯数字
+        "format": { "type": "csv", "parse": { "exports": "number" } }
+      },
       "mark": { "type": "rect", "tooltip": true, "cornerRadius": 2 },
       "encoding": {
         "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "title": "Month", "labelAngle": 0 },
         "y": { "field": "year", "type": "ordinal", "title": "Year" },
-        "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "title": "Exports" }
+        "color": {
+          "field": "exports",
+          "type": "quantitative",
+          "scale": { "scheme": "oranges" },
+          // 关键修复 2：使用 ~s 格式化巨大数字（例如 60,000,000,000 会变成 60G）
+          "legend": { "title": "Exports (RM)", "format": "~s", "gradientLength": 150 }
+        },
+        "tooltip": [
+          { "field": "year", "type": "ordinal", "title": "Year" },
+          { "field": "month", "type": "ordinal", "title": "Month" },
+          { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" }
+        ]
       }
     };
 
