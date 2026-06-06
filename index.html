@@ -342,32 +342,36 @@
 
     var specTradeBalance = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": { "url": "annual_trade_balance.csv" },
-
-      // 核心修复：强制将你的 Year 列解析为 Vega 能够完美处理的时间格式 (YYYY)
-      "transform": [
-        { "calculate": "datetime(datum.Year, 0, 1)", "as": "parsed_year" }
-      ],
-
+      // 1. 强制对齐文件名！(跟你上传的 CSV 名字一模一样)
+      "data": {
+        "url": "tech_trade_balance.csv",
+        // 2. 强制原生解析：直接在读取时把 Year 认定为年份时间格式，把 Value 认定为数字
+        "format": {
+          "type": "csv",
+          "parse": {
+            "Year": "date:'%Y'",
+            "Value (RM Billion)": "number"
+          }
+        }
+      },
       "width": "container",
       "height": 320,
       "encoding": {
         "x": {
-          "field": "parsed_year",
-          // 改回 temporal，利用 Vega 最强的时间轴渲染器自动处理间距
+          "field": "Year",
+          // 因为上面已经原生解析了，这里直接用 temporal，毫无阻碍
           "type": "temporal",
           "axis": {
             "title": "Year",
             "grid": false,
-            "format": "%Y",  // 强制只显示年份，如 2010, 2020
-            "tickCount": "year" // 根据宽度自动分配年份刻度
+            "format": "%Y", // 保证 X 轴只显示 2010, 2015 这种年份
+            "tickCount": 6  // 自动分配间距，防止文字挤在一起
           }
         },
         "y": {
           "field": "Value (RM Billion)",
           "type": "quantitative",
-          // 开启 padding 确保最上面的线不会被切掉
-          "scale": { "zero": false, "padding": 10 },
+          "scale": { "zero": false }, // 防止 Y 轴从 0 开始导致线跑到最上面
           "axis": { "title": "Trade Value (RM Billion)", "grid": true }
         },
         "color": {
@@ -381,19 +385,15 @@
         }
       },
       "layer": [
-        // 趋势连线层
-        {
-          "mark": { "type": "line", "strokeWidth": 2.5 }
-        },
-        // 趋势数据点层
-        {
-          "mark": { "type": "point", "size": 50, "filled": true }
-        },
-        // 悬停准星交互层
+        // 连线层
+        { "mark": { "type": "line", "strokeWidth": 2.5 } },
+        // 数据点层
+        { "mark": { "type": "point", "size": 50, "filled": true } },
+        // Hover 交互层
         {
           "params": [{
             "name": "hover",
-            "select": { "type": "point", "fields": ["parsed_year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
+            "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
           }],
           "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] },
           "encoding": {
@@ -402,8 +402,8 @@
               "value": 0
             },
             "tooltip": [
-              // 悬停时依然干净地显示年份
-              { "field": "parsed_year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+              // 干净利落显示年份
+              { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
               { "field": "Trade Type", "type": "nominal", "title": "Type" },
               { "field": "Value (RM Billion)", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
             ]
