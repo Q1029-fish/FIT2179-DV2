@@ -294,21 +294,26 @@
       }
     };
 
+    // 3. Line Imports vs Exports (已优化：5年间隔 + 2025终点锁定 + 共享交互)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
         "url": "tech_trade_balance.csv",
-        "format": { "type": "csv", "parse": { "Year": "number", "Value (RM Billion)": "number" } }
+        "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
       },
       "width": "container", "height": 320,
-      // 核心：在 transform 中把数字年份转为标准时间戳，这是最稳妥的
-      "transform": [{ "calculate": "datetime(datum.Year, 0, 1)", "as": "date_obj" }],
       "encoding": {
         "x": {
-          "field": "date_obj",
+          "field": "Year",
           "type": "temporal",
-          "axis": { "title": "Year", "grid": false, "format": "%Y", "tickCount": 10 },
-          // 使用 datetime 函数锁死时间范围，这是标准写法
+          "axis": {
+            "title": "Year",
+            "grid": false,
+            "format": "%Y",
+            // 使用 interval 设置步长为 5 年
+            "tickCount": { "interval": "year", "step": 5 }
+          },
+          // 强制范围：从 2006 到 2025
           "scale": { "domain": [{ "year": 2006 }, { "year": 2025 }] }
         },
         "y": {
@@ -326,16 +331,16 @@
       },
       "layer": [
         { "mark": { "type": "line", "strokeWidth": 2.5 } },
-        { "mark": { "type": "circle", "size": 60 } },
+        { "mark": { "type": "circle", "size": 60, "opacity": 1 } },
         {
-          "transform": [{ "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["date_obj"] }],
-          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["date_obj"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
+          "transform": [{ "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }],
+          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
           "encoding": {
-            "x": { "field": "date_obj", "type": "temporal" },
+            "x": { "field": "Year", "type": "temporal" },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0 },
             "tooltip": [
-              { "field": "date_obj", "type": "temporal", "timeUnit": "year", "title": "Year" },
+              { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
               { "field": "Export", "type": "quantitative", "title": "Export (RM Billion)", "format": ".1f" },
               { "field": "Import", "type": "quantitative", "title": "Import (RM Billion)", "format": ".1f" }
             ]
@@ -565,13 +570,19 @@
       ]
     };
 
+    // 确保这几个 ID 与 HTML 中的 <div id="..."> 完全一致
     vegaEmbed('#vis-trend', specTrend, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-donut', specDonut, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-line', specLine, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-import', specMapImport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-export', specMapExport, { config: hdConfig, actions: false }).catch(console.error);
-    vegaEmbed('#vis-bar', specBar, { config: hdConfig, actions: false }).catch(console.error);
+
+    // 图 6：哑铃图 (注意这里改成了 specDumbbell)
+    vegaEmbed('#vis-bar', specDumbbell, { config: hdConfig, actions: false }).catch(console.error);
+
+    // 图 7：堆叠柱状图
     vegaEmbed('#vis-stacked', specStacked, { config: hdConfig, actions: false }).catch(console.error);
+
     vegaEmbed('#vis-scatter', specScatter, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-dashboard', specDashboard, { config: hdConfig, actions: false }).catch(console.error);
