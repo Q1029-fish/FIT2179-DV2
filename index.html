@@ -414,23 +414,38 @@
 
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 400,
+      "width": "container",
+      "height": 400,
       "projection": {
         "type": "naturalEarth1",
+        "center": [115, 15], // 完美锁定南海中心
+        "scale": 500         // 放大倍数，铺满亚洲
       },
       "layer": [
+        // 第一层：灰色底图 (即使没数据也会显示亚洲大陆的轮廓)
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 }
         },
+        // 第二层：数据高亮层
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
+            // 核心修复：在这里统一GeoJSON那些稀奇古怪的名字，对齐你的CSV
             {
-              "calculate": "datum.country == 'United States' ? 'United States of America' : datum.country == 'Singapore' ? 'Singapore' : datum.country",
-              "as": "country_standard"
+              "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))",
+              "as": "geo_name"
             },
-            { "lookup": "properties.name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
+            // 用转换后的 geo_name 去匹配你 CSV 里的 country
+            {
+              "lookup": "geo_name",
+              "from": {
+                "data": { "url": "import_origins.csv" },
+                "key": "country",
+                "fields": ["imports"]
+              }
+            },
+            // 过滤掉没有匹配上数据的国家
             { "filter": "datum.imports > 0" }
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
@@ -443,7 +458,10 @@
               "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" }
             },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
-            "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Origin Region" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
+            "tooltip": [
+              { "field": "geo_name", "type": "nominal", "title": "Origin Country" },
+              { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }
+            ]
           }
         }
       ]
