@@ -368,7 +368,8 @@
         {
           "mark": {
             "type": "point",
-            "size": 70
+            "size": 20,
+            "filled": true
           }
         },
 
@@ -554,89 +555,212 @@
       ]
     };
 
-    // 6. 贸易强度气泡图 (Trade Intensity Bubble Chart)
     var specIntensityBubble = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+
       "width": "container",
-      "height": 300,
-      "data": { "url": "trade_intensity.csv" },
-      "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5, "opacity": 0.8 },
+      "height": 320,
+
+      "data": {
+        "url": "trade_intensity.csv",
+        "format": {
+          "type": "csv",
+          "parse": {
+            "Export": "number",
+            "TII": "number"
+          }
+        }
+      },
+
+      "mark": {
+        "type": "circle",
+        "opacity": 0.8,
+        "stroke": "black",
+        "strokeWidth": 0.5
+      },
+
       "encoding": {
         "x": {
-          "field": "MY Export to Country (RM Bil)",
+          "field": "Export",
           "type": "quantitative",
-          "title": "Export Value (RM Billion)",
-          "scale": { "zero": false }
+          "title": "Export Value (RM Billion)"
         },
+
         "y": {
-          "field": "Intensity Index (TII)",
+          "field": "TII",
           "type": "quantitative",
-          "title": "Trade Intensity Index",
-          "scale": { "zero": false }
+          "title": "Trade Intensity Index"
         },
+
         "size": {
-          "field": "MY Export to Country (RM Bil)",
+          "field": "Export",
           "type": "quantitative",
-          "scale": { "range": [200, 1000] },
-          "legend": null
+          "scale": {
+            "range": [200, 1500]
+          }
         },
+
         "color": {
           "field": "Country",
           "type": "nominal",
-          "scale": { "scheme": "tableau10" }
+          "scale": {
+            "scheme": "tableau10"
+          }
         },
+
         "tooltip": [
-          { "field": "Country", "type": "nominal" },
-          { "field": "MY Export to Country (RM Bil)", "title": "Exports (RM Bil)", "format": ".1f" },
-          { "field": "Intensity Index (TII)", "title": "Intensity Index", "format": ".2f" }
+          { "field": "Country" },
+          { "field": "Export", "format": ".1f" },
+          { "field": "TII", "format": ".2f" }
         ]
       }
     };
 
-    // 7. Stacked Bar (已修复：增加强力类型解析)
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 300,
+
+      "width": "container",
+      "height": 320,
+
       "data": {
         "url": "market_share.csv",
-        "format": { "parse": { "exports": "number" } } // 强力解析
+        "format": {
+          "type": "csv",
+          "parse": {
+            "year": "number",
+            "exports": "number"
+          }
+        }
       },
-      "transform": [
-        { "filter": "datum.year >= 2021" },
-        { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
-      ],
+
       "mark": "bar",
+
       "encoding": {
-        "x": { "field": "year", "type": "ordinal", "title": "Year", "labelAngle": 0 },
-        "y": { "field": "exports", "type": "quantitative", "stack": "normalize", "title": "Market Share", "format": ".0%" },
-        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "set2" }, "legend": { "orient": "bottom" } },
+
+        "x": {
+          "field": "year",
+          "type": "ordinal",
+          "title": "Year"
+        },
+
+        "y": {
+          "field": "exports",
+          "type": "quantitative",
+          "stack": "normalize",
+          "title": "Market Share",
+          "axis": {
+            "format": "%"
+          }
+        },
+
+        "color": {
+          "field": "country",
+          "type": "nominal",
+          "scale": {
+            "scheme": "set2"
+          }
+        },
+
         "tooltip": [
-          { "field": "year", "type": "ordinal" },
-          { "field": "country", "type": "nominal" },
-          { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }
+          { "field": "year" },
+          { "field": "country" },
+          {
+            "field": "exports",
+            "title": "Exports (RM Billion)",
+            "format": ".1f"
+          }
         ]
       }
     };
 
-    // 8. Bubble Scatter (已修复：增加强力类型解析)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 400,
+
+      "width": "container",
+      "height": 400,
+
       "data": {
         "url": "trade_balance.csv",
-        "format": { "parse": { "imports": "number", "exports": "number" } } // 强力解析
+        "format": {
+          "type": "csv",
+          "parse": {
+            "imports": "number",
+            "exports": "number",
+            "total_trade": "number"
+          }
+        }
       },
+
       "transform": [
-        { "calculate": "datum.imports / 1000000000", "as": "imports_bil" },
-        { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
+        {
+          "calculate": "datum.imports/1000000000",
+          "as": "imports_bil"
+        },
+        {
+          "calculate": "datum.exports/1000000000",
+          "as": "exports_bil"
+        },
+        {
+          "calculate": "datum.total_trade/1000000000",
+          "as": "trade_bil"
+        }
       ],
-      "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 },
+
+      "mark": {
+        "type": "circle",
+        "stroke": "black",
+        "strokeWidth": 0.5,
+        "opacity": 0.8
+      },
+
       "encoding": {
-        "x": { "field": "imports_bil", "type": "quantitative", "title": "Import Value (RM Billion)", "axis": { "format": ".1f" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
-        "y": { "field": "exports_bil", "type": "quantitative", "title": "Export Value (RM Billion)", "axis": { "format": ".1f" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
-        "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [50, 1500] }, "legend": null },
-        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" }, "legend": { "orient": "right", "title": "Country" } },
-        "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }, { "field": "imports_bil", "type": "quantitative", "title": "Imports (RM Billion)", "format": ".1f" }]
+
+        "x": {
+          "field": "imports_bil",
+          "type": "quantitative",
+          "title": "Imports (RM Billion)"
+        },
+
+        "y": {
+          "field": "exports_bil",
+          "type": "quantitative",
+          "title": "Exports (RM Billion)"
+        },
+
+        "size": {
+          "field": "trade_bil",
+          "type": "quantitative",
+          "scale": {
+            "range": [100, 2500]
+          }
+        },
+
+        "color": {
+          "field": "country",
+          "type": "nominal",
+          "scale": {
+            "scheme": "category10"
+          }
+        },
+
+        "tooltip": [
+          { "field": "country" },
+          {
+            "field": "imports_bil",
+            "title": "Imports",
+            "format": ".1f"
+          },
+          {
+            "field": "exports_bil",
+            "title": "Exports",
+            "format": ".1f"
+          },
+          {
+            "field": "trade_bil",
+            "title": "Total Trade",
+            "format": ".1f"
+          }
+        ]
       }
     };
 
