@@ -156,41 +156,40 @@
     <div class="chart-card">
       <h3>1. The Macro Trend: Unprecedented Export Boom</h3>
       <p class="story-text">Driven by global digital transformation, Malaysia's tech exports have shattered records.
-        Notice the exponential boom post-2021. <strong>(Brush the timeline below to zoom)</strong>.</p>
+        Notice the steady growth turning into an exponential boom post-2021.</p>
       <div id="vis-trend" class="vis-container"></div>
     </div>
 
     <div class="grid-2-col">
       <div class="grid-card">
         <h3>2. Export Structure</h3>
-        <p class="story-text">This donut chart clarifies the fundamental baseline: Within the vast "Machinery and
-          Transport" sector, the absolute engine is raw Electronic & Electrical components.</p>
+        <p class="story-text">This donut chart clarifies the fundamental baseline: Within the vast export sector, the
+          absolute engine is raw Electronic & Electrical components.</p>
         <div id="vis-donut" class="vis-container"></div>
       </div>
 
       <div class="grid-card">
         <h3>3. The Assembly Line Reality</h3>
-        <p class="story-text">A massive export engine requires massive fuel. Looking solely at the Tech & Machinery
-          sector (SITC 7), we see imports mirroring exports almost perfectly. This reveals our true role: a global
-          testing hub.</p>
+        <p class="story-text">A massive export engine requires massive fuel. The parallel growth of imports and exports
+          validates Malaysia's position as a highly integrated processing node.</p>
         <div id="vis-line" class="vis-container"></div>
       </div>
     </div>
 
 
-    <div class="chapter-header"><span>Act II:</span> The Global Supply Chain</div>
+    <div class="chapter-header"><span>Act II:</span> The Asian Semiconductor Corridor</div>
 
     <div class="chart-card">
       <h3>4. Import Origins</h3>
-      <p class="story-text">This interactive map reveals our heavy reliance on economies for raw wafers and specialized
-        machinery. Showing the global trade network.</p>
+      <p class="story-text">This map reveals our heavy regional reliance on Asian economies for raw wafers and
+        specialized machinery, forming the foundation of our supply chain.</p>
       <div id="vis-map-import" class="vis-container"></div>
     </div>
 
     <div class="chart-card">
       <h3>5. Export Destinations</h3>
-      <p class="story-text">After assembly, products are funneled into consumer markets. Compare with imports to see
-        Malaysia's true function: a global transit hub for tech components.</p>
+      <p class="story-text">The parity between import and export origins is an indicator of Malaysia's deep-rooted
+        integration into the circular Asian semiconductor value chain.</p>
       <div id="vis-map-export" class="vis-container"></div>
     </div>
 
@@ -201,13 +200,13 @@
       <div class="grid-card">
         <h3>6. Top Global Buyers</h3>
         <p class="story-text">A sorted view of the golden triangle of demand. Singapore acts as a massive transshipment
-          hub, immediately followed by the superpowers: the US and China.</p>
+          hub, immediately followed by the superpowers.</p>
         <div id="vis-bar" class="vis-container"></div>
       </div>
       <div class="grid-card">
         <h3>7. Partner Market Share</h3>
-        <p class="story-text">A normalized perspective showing how the balance of power among our top 3 trading partners
-          fluctuates over time amid global geopolitical tensions.</p>
+        <p class="story-text">A normalized perspective showing how the balance of power among our top trading partners
+          fluctuates over time amid global tensions.</p>
         <div id="vis-stacked" class="vis-container"></div>
       </div>
     </div>
@@ -215,7 +214,7 @@
     <div class="chart-card">
       <h3>8. The Trade Balance: Imports vs. Exports</h3>
       <p class="story-text">Are we in a trade surplus or deficit with specific partners? Countries plotted higher on the
-        Y-axis represent strong export destinations, while bubble size indicates total trade volume.</p>
+        Y-axis represent strong export destinations.</p>
       <div id="vis-scatter" class="vis-container"></div>
     </div>
 
@@ -225,7 +224,7 @@
     <div class="chart-card">
       <h3>9. Seasonal Surges: When Does Export Peak?</h3>
       <p class="story-text">Tech manufacturing is highly cyclical. Notice the consistent darkening of colors towards the
-        third and fourth quarters (Q3/Q4) as factories rush to meet global holiday demands.</p>
+        third and fourth quarters (Q3/Q4).</p>
       <div id="vis-heatmap" class="vis-container"></div>
     </div>
 
@@ -240,8 +239,7 @@
 
   <footer>
     <p><strong>FIT2179 Data Visualisation 2</strong> | Created by Yuan Qian (ID: 35507292)</p>
-    <p>Data Sources: Department of Statistics Malaysia (DOSM) & UN Comtrade / Global Trade Data (Data finalized to
-      2025).</p>
+    <p>Data Sources: Department of Statistics Malaysia (DOSM) & UN Comtrade / Global Trade Data.</p>
   </footer>
 
   <script>
@@ -253,68 +251,32 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
+    // 1. Trend (完美精简版：无拖动条、高度合适、2025字样下移防遮挡)
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
-
-      // 保持列名映射转换，确保你的 CSV 能读出来
       "transform": [
         { "calculate": "datum.Year", "as": "date" },
         { "calculate": "datum['Export Value (RM Billion)'] * 1000000000", "as": "exports" }
       ],
-
-      // 直接设置图表宽高，不需要 vconcat
       "width": "container",
-      "height": 300, // 稍微缩小高度，让图表显得更紧凑
-
+      "height": 300,
       "encoding": {
-        "x": {
-          "field": "date",
-          "type": "ordinal",
-          // 增加 labelAngle 为 0 防止年份倾斜，去除网格线保持干净
-          "axis": { "title": "Year", "grid": false, "labelAngle": 0 }
-        },
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          // Y轴稍微增加一点 domain 留白，防止最高点被切掉
-          "scale": { "zero": false, "padding": 20 },
-          "axis": { "title": "Export Value (RM)", "format": "~s" }
-        }
+        "x": { "field": "date", "type": "ordinal", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
+        "y": { "field": "exports", "type": "quantitative", "scale": { "zero": false, "padding": 20 }, "axis": { "title": "Export Value (RM)", "format": "~s" } }
       },
-
       "layer": [
-        // 渐变面积图底色
-        {
-          "mark": {
-            "type": "area",
-            "line": { "color": "#2563eb", "strokeWidth": 2 },
-            "color": { "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear", "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "rgba(37, 99, 235, 0.4)" }] }
-          }
-        },
-
-        // 标注 1：2021
+        { "mark": { "type": "area", "line": { "color": "#2563eb", "strokeWidth": 2 }, "color": { "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear", "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "rgba(37, 99, 235, 0.4)" }] } } },
         {
           "transform": [{ "filter": "datum.date == 2021" }],
           "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": -20, "dy": -20, "fontWeight": "bold", "color": "#1e293b", "align": "right" }
         },
-        {
-          "transform": [{ "filter": "datum.date == 2021" }],
-          "mark": { "type": "point", "color": "#1e293b" }
-        },
-
-        // 标注 2：2025 (重点调整：dy 从 -20 改成了 -5，甚至可以改为 5，文字会显著下移)
+        { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "point", "color": "#1e293b" } },
         {
           "transform": [{ "filter": "datum.date == 2025" }],
-          // dy 改为 -5，文字更靠近数据点，不会被顶部遮挡
           "mark": { "type": "text", "text": "2025 Peak", "dx": -15, "dy": -5, "fontWeight": "bold", "color": "#b91c1c", "align": "right" }
         },
-        {
-          "transform": [{ "filter": "datum.date == 2025" }],
-          "mark": { "type": "point", "color": "#b91c1c", "size": 100 }
-        },
-
-        // Hover 交互层 (保持纯净的 Year 数值)
+        { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "point", "color": "#b91c1c", "size": 100 } },
         {
           "params": [{ "name": "hover", "select": { "type": "point", "fields": ["date"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" },
@@ -325,6 +287,7 @@
       ]
     };
 
+    // 2. Donut
     var specDonut = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 280,
@@ -340,69 +303,28 @@
       }
     };
 
-    var specTradeBalance = {
+    // 3. Line Imports vs Exports (时间解析修复版)
+    var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      // 1. 强制对齐文件名！(跟你上传的 CSV 名字一模一样)
       "data": {
         "url": "tech_trade_balance.csv",
-        // 2. 强制原生解析：直接在读取时把 Year 认定为年份时间格式，把 Value 认定为数字
-        "format": {
-          "type": "csv",
-          "parse": {
-            "Year": "date:'%Y'",
-            "Value (RM Billion)": "number"
-          }
-        }
+        "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
       },
-      "width": "container",
-      "height": 320,
+      "width": "container", "height": 320,
       "encoding": {
-        "x": {
-          "field": "Year",
-          // 因为上面已经原生解析了，这里直接用 temporal，毫无阻碍
-          "type": "temporal",
-          "axis": {
-            "title": "Year",
-            "grid": false,
-            "format": "%Y", // 保证 X 轴只显示 2010, 2015 这种年份
-            "tickCount": 6  // 自动分配间距，防止文字挤在一起
-          }
-        },
-        "y": {
-          "field": "Value (RM Billion)",
-          "type": "quantitative",
-          "scale": { "zero": false }, // 防止 Y 轴从 0 开始导致线跑到最上面
-          "axis": { "title": "Trade Value (RM Billion)", "grid": true }
-        },
-        "color": {
-          "field": "Trade Type",
-          "type": "nominal",
-          "scale": {
-            "domain": ["Export", "Import"],
-            "range": ["#2563eb", "#ef4444"]
-          },
-          "legend": { "orient": "top-left", "title": null }
-        }
+        "x": { "field": "Year", "type": "temporal", "axis": { "title": "Year", "grid": false, "format": "%Y", "tickCount": 6 } },
+        "y": { "field": "Value (RM Billion)", "type": "quantitative", "scale": { "zero": false, "padding": 10 }, "axis": { "title": "Trade Value (RM Billion)", "grid": true } },
+        "color": { "field": "Trade Type", "type": "nominal", "scale": { "domain": ["Export", "Import"], "range": ["#2563eb", "#ef4444"] }, "legend": { "orient": "top-left", "title": null } }
       },
       "layer": [
-        // 连线层
         { "mark": { "type": "line", "strokeWidth": 2.5 } },
-        // 数据点层
         { "mark": { "type": "point", "size": 50, "filled": true } },
-        // Hover 交互层
         {
-          "params": [{
-            "name": "hover",
-            "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
-          }],
+          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] },
           "encoding": {
-            "opacity": {
-              "condition": { "param": "hover", "empty": false, "value": 1 },
-              "value": 0
-            },
+            "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0 },
             "tooltip": [
-              // 干净利落显示年份
               { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
               { "field": "Trade Type", "type": "nominal", "title": "Type" },
               { "field": "Value (RM Billion)", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
@@ -412,114 +334,64 @@
       ]
     };
 
+    // 4. Map Import (亚洲聚焦 + 名称完美映射修复版)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container",
-      "height": 400,
-      "projection": {
-        "type": "naturalEarth1",
-        "center": [115, 15], // 完美锁定南海中心
-        "scale": 500         // 放大倍数，铺满亚洲
-      },
+      "width": "container", "height": 400,
+      "projection": { "type": "naturalEarth1", "center": [115, 15], "scale": 500 },
       "layer": [
-        // 第一层：灰色底图 (即使没数据也会显示亚洲大陆的轮廓)
-        {
-          "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 }
-        },
-        // 第二层：数据高亮层
+        { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
-            // 核心修复：在这里统一GeoJSON那些稀奇古怪的名字，对齐你的CSV
-            {
-              "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))",
-              "as": "geo_name"
-            },
-            // 用转换后的 geo_name 去匹配你 CSV 里的 country
-            {
-              "lookup": "geo_name",
-              "from": {
-                "data": { "url": "import_origins.csv" },
-                "key": "country",
-                "fields": ["imports"]
-              }
-            },
-            // 过滤掉没有匹配上数据的国家
+            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
+            { "lookup": "geo_name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
             { "filter": "datum.imports > 0" }
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": {
-              "field": "imports",
-              "type": "quantitative",
-              "scale": { "scheme": "purples" },
-              "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" }
-            },
+            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
-            "tooltip": [
-              { "field": "geo_name", "type": "nominal", "title": "Origin Country" },
-              { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }
-            ]
+            "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Origin Country" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
           }
         }
       ]
     };
 
+    // 5. Map Export (亚洲聚焦 + 名称完美映射修复版)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": {
-        "type": "naturalEarth1",
-        "center": [130, 7],
-        "scale": 220
-      },
+      "projection": { "type": "naturalEarth1", "center": [115, 15], "scale": 500 },
       "layer": [
-        {
-          "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
-          "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 }
-        },
+        { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
-            { "lookup": "properties.name", "from": { "data": { "url": "export_destinations.csv" }, "key": "country", "fields": ["exports"] } },
+            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
+            { "lookup": "geo_name", "from": { "data": { "url": "export_destinations.csv" }, "key": "country", "fields": ["exports"] } },
             { "filter": "datum.exports > 0" }
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": {
-              "field": "exports",
-              "type": "quantitative",
-              "scale": { "scheme": "oranges" },
-              "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" }
-            },
+            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
-            "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Destination Region" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
+            "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Destination Country" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
           }
         }
       ]
     };
 
+    // 6. Bar Chart
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "export_destinations.csv" },
       "encoding": {
-        "y": {
-          "field": "country",
-          "type": "nominal",
-          "sort": { "field": "exports", "op": "sum", "order": "descending" },
-          "title": null,
-          "axis": null
-        },
-        "x": {
-          "field": "exports",
-          "type": "quantitative",
-          "title": "Exports (RM)",
-          "axis": { "format": "~s" }
-        }
+        "y": { "field": "country", "type": "nominal", "sort": { "field": "exports", "op": "sum", "order": "descending" }, "title": null, "axis": null },
+        "x": { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "axis": { "format": "~s" } }
       },
       "layer": [
         {
@@ -531,20 +403,17 @@
         },
         {
           "mark": { "type": "text", "align": "left", "x": 10, "color": "white", "fontWeight": "bold", "pointerEvents": "none" },
-          "encoding": {
-            "text": { "field": "country", "type": "nominal" }
-          }
+          "encoding": { "text": { "field": "country", "type": "nominal" } }
         }
       ]
     };
 
+    // 7. Stacked Bar 
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "market_share.csv" },
-      "transform": [
-        { "filter": "year(datum.year) >= 2021 && year(datum.year) <= 2025" }
-      ],
+      "transform": [{ "filter": "year(datum.year) >= 2021" }],
       "mark": "bar",
       "encoding": {
         "x": { "field": "year", "type": "ordinal", "timeUnit": "year", "title": "Year", "labelAngle": 0 },
@@ -554,6 +423,7 @@
       }
     };
 
+    // 8. Bubble Scatter
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -568,54 +438,24 @@
       }
     };
 
+    // 9. Heatmap 
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
       "data": { "url": "seasonal_heatmap.csv" },
-      "transform": [{ "filter": "year(datum.year) <= 2025" }],
       "mark": { "type": "rect", "tooltip": true, "cornerRadius": 2 },
       "encoding": {
-        "x": {
-          "field": "month",
-          "type": "ordinal",
-          "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-          "title": "Month",
-          "axis": {
-            "labelAngle": 0,
-            "labelAlign": "center",
-            "labelBaseline": "top",
-            "domain": false,
-            "ticks": false
-          }
-        },
-        "y": {
-          "field": "year",
-          "type": "ordinal",
-          "title": "Year",
-          "axis": { "domain": false, "ticks": false }
-        },
-        "color": {
-          "field": "exports",
-          "type": "quantitative",
-          "scale": { "scheme": "oranges" },
-          "legend": {
-            "title": "Exports (RM)",
-            "format": "~s",
-            "gradientLength": 150
-          }
-        },
-        "tooltip": [
-          { "field": "year", "type": "ordinal", "title": "Year" },
-          { "field": "month", "type": "ordinal", "title": "Month" },
-          { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" }
-        ]
+        "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "title": "Month", "axis": { "labelAngle": 0, "labelAlign": "center", "labelBaseline": "top", "domain": false, "ticks": false } },
+        "y": { "field": "year", "type": "ordinal", "title": "Year", "axis": { "domain": false, "ticks": false } },
+        "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "format": "~s", "gradientLength": 150 } },
+        "tooltip": [{ "field": "year", "type": "ordinal", "title": "Year" }, { "field": "month", "type": "ordinal", "title": "Month" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" }]
       }
     };
 
+    // 10. Dashboard 
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv", "format": { "type": "csv", "parse": { "exports": "number" } } },
-      "transform": [{ "filter": "year(datum.year) <= 2025" }],
       "vconcat": [
         {
           "width": 800, "height": 100, "title": "Total Exports by Product Category (Click to Filter)",
@@ -624,14 +464,8 @@
           "encoding": {
             "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM)", "axis": { "format": "~s" } },
             "y": { "field": "product", "type": "nominal", "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null },
-            "color": {
-              "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" } },
-              "value": "#cbd5e1"
-            },
-            "tooltip": [
-              { "field": "product", "title": "Category" },
-              { "field": "exports", "aggregate": "sum", "title": "Total Exports", "format": "~s" }
-            ]
+            "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" } }, "value": "#cbd5e1" },
+            "tooltip": [{ "field": "product", "title": "Category" }, { "field": "exports", "aggregate": "sum", "title": "Total Exports", "format": "~s" }]
           }
         },
         {
@@ -642,16 +476,13 @@
             "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "axis": { "format": "~s" } },
             "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Product Category" } },
             "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 },
-            "tooltip": [
-              { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-              { "field": "product", "title": "Category" },
-              { "field": "exports", "type": "quantitative", "title": "Value", "format": "~s" }
-            ]
+            "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" }, { "field": "product", "title": "Category" }, { "field": "exports", "type": "quantitative", "title": "Value", "format": "~s" }]
           }
         }
       ]
     };
 
+    // 核心修复点：这里干净利落地调用每个独立的变量名，绝不抛错
     vegaEmbed('#vis-trend', specTrend, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-donut', specDonut, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-line', specLine, { config: hdConfig, actions: false }).catch(console.error);
