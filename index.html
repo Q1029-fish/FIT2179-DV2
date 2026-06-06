@@ -257,11 +257,10 @@
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
 
-      // 核心修复点：将新数据的列名，无缝映射回你老代码的变量名！
       "transform": [
-        // 1. 将 "Year" 转换成时间格式(每年1月1日)，赋值给老变量 "date"
-        { "calculate": "datetime(datum.Year, 0, 1)", "as": "date" },
-        // 2. 将 "RM Billion" 乘以10亿，赋值给老变量 "exports"，这样你的 "~s" 格式依然完美生效(显示为 G)
+        // 将 "Year" 映射为 "date" 以兼容原结构，保持数值型
+        { "calculate": "datum.Year", "as": "date" },
+        // 依然乘以 10 亿，让 Y 轴自动缩写为 G (Billion)
         { "calculate": "datum['Export Value (RM Billion)'] * 1000000000", "as": "exports" }
       ],
 
@@ -269,47 +268,52 @@
         {
           "width": "container", "height": 350,
           "encoding": {
-            "x": { "field": "date", "type": "temporal", "scale": { "domain": { "param": "brush" } }, "axis": { "title": "Year", "grid": false } },
+            // X 轴直接使用 ordinal 类型显示年份
+            "x": { "field": "date", "type": "ordinal", "scale": { "domain": { "param": "brush" } }, "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
             "y": { "field": "exports", "type": "quantitative", "axis": { "title": "Export Value (RM)", "format": "~s" } }
           },
           "layer": [
-            // 你的渐变面积图（完全没动）
+            // 渐变面积图底色
             { "mark": { "type": "area", "line": { "color": "#2563eb", "strokeWidth": 1.5 }, "color": { "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear", "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "rgba(37, 99, 235, 0.4)" }] } } },
 
-            // 标注1：2021 疫情后反弹 (因为年度数据统一算作1月，所以 month 必须是 0)
+            // 标注 1：2021
             {
-              "transform": [{ "filter": "year(datum.date) == 2021 && month(datum.date) == 0" }],
-              "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": 50, "dy": -20, "fontWeight": "bold", "color": "#1e293b" }
+              "transform": [{ "filter": "datum.date == 2021" }],
+              "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": -20, "dy": -20, "fontWeight": "bold", "color": "#1e293b", "align": "right" }
             },
             {
-              "transform": [{ "filter": "year(datum.date) == 2021 && month(datum.date) == 0" }],
+              "transform": [{ "filter": "datum.date == 2021" }],
               "mark": { "type": "point", "color": "#1e293b" }
             },
 
-            // 标注2：修改为 2025 最高点 (你的新数据最高点在 2025，同样 month 为 0)
+            // 标注 2：2025 (修复越界：向左偏移对齐)
             {
-              "transform": [{ "filter": "year(datum.date) == 2025 && month(datum.date) == 0" }],
-              "mark": { "type": "text", "text": "2025 Peak", "dx": -20, "dy": -20, "fontWeight": "bold", "color": "#b91c1c" }
+              "transform": [{ "filter": "datum.date == 2025" }],
+              "mark": { "type": "text", "text": "2025 Peak", "dx": -15, "dy": -20, "fontWeight": "bold", "color": "#b91c1c", "align": "right" }
             },
             {
-              "transform": [{ "filter": "year(datum.date) == 2025 && month(datum.date) == 0" }],
-              "mark": { "type": "point", "color": "#b91c1c" }
+              "transform": [{ "filter": "datum.date == 2025" }],
+              "mark": { "type": "point", "color": "#b91c1c", "size": 100 }
             },
 
-            // 你的高级 Hover 交互特效（把 Tooltip 的显示格式从年月改成了只有年份 year）
-            { "params": [{ "name": "hover", "select": { "type": "point", "fields": ["date"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }], "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" }, "encoding": { "tooltip": [{ "field": "date", "type": "temporal", "timeUnit": "year", "title": "Year" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" }] } },
+            // Hover 交互层：删除了 timeUnit，直接显示纯净的 Year 数值
+            {
+              "params": [{ "name": "hover", "select": { "type": "point", "fields": ["date"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
+              "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" },
+              "encoding": { "tooltip": [{ "field": "date", "type": "nominal", "title": "Year" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" }] }
+            },
             { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] } },
             { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "circle", "color": "#0f172a", "size": 70 } }
           ]
         },
 
-        // 你的底部拖拽缩放条（完全没动）
+        // 底部缩放控制条
         {
           "width": "container", "height": 40,
           "mark": { "type": "area", "color": "rgba(37, 99, 235, 0.2)" },
           "params": [{ "name": "brush", "select": { "type": "interval", "encodings": ["x"] } }],
           "encoding": {
-            "x": { "field": "date", "type": "temporal", "axis": { "title": "Drag to zoom", "grid": false } },
+            "x": { "field": "date", "type": "ordinal", "axis": { "title": "Drag to zoom", "grid": false, "labelAngle": 0 } },
             "y": { "field": "exports", "type": "quantitative", "axis": null }
           }
         }
