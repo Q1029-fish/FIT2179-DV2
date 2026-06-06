@@ -255,29 +255,43 @@
 
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": { "url": "annual_ee_exports_asia.csv" },
-      "width": "container", "height": 350,
-      "encoding": {
-        "x": { "field": "year", "type": "ordinal", "title": "Year", "axis": { "labelAngle": 0 } },
-        "y": { "field": "exports", "type": "quantitative", "title": "Annual Export Value (RM Billion)", "axis": { "format": "~s" } }
-      },
-      "layer": [
-        { "mark": { "type": "area", "line": { "color": "#2563eb", "strokeWidth": 2 }, "color": "rgba(37, 99, 235, 0.2)" } },
+      "data": { "url": "annual_ee_exports_asia.csv" }, // 确保指向你的年度数据文件
+      "vconcat": [
         {
-          "transform": [{ "filter": "datum.year == 2021" }],
-          "mark": { "type": "text", "text": "Pandemic Recovery", "dx": 0, "dy": -20, "fontWeight": "bold", "color": "#1e293b" }
+          "width": "container", "height": 350,
+          "encoding": {
+            "x": { "field": "Year", "type": "ordinal", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
+            "y": { "field": "Export Value (RM Billion)", "type": "quantitative", "axis": { "title": "Export Value (RM Billion)", "format": ".1f" } }
+          },
+          "layer": [
+            { "mark": { "type": "area", "line": { "color": "#2563eb", "strokeWidth": 1.5 }, "color": { "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear", "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "rgba(37, 99, 235, 0.4)" }] } } },
+            {
+              "transform": [{ "filter": "datum.Year == 2021" }],
+              "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": 0, "dy": -20, "fontWeight": "bold", "color": "#1e293b" }
+            },
+            { "transform": [{ "filter": "datum.Year == 2021" }], "mark": { "type": "point", "color": "#1e293b" } },
+            {
+              "transform": [{ "filter": "datum.Year == 2025" }],
+              "mark": { "type": "text", "text": "2025 Peak", "dx": 0, "dy": -20, "fontWeight": "bold", "color": "#b91c1c" }
+            },
+            { "transform": [{ "filter": "datum.Year == 2025" }], "mark": { "type": "circle", "color": "#b91c1c", "size": 100 } },
+            {
+              "params": [{ "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
+              "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" },
+              "encoding": { "tooltip": [{ "field": "Year", "title": "Year" }, { "field": "Export Value (RM Billion)", "title": "Value (RM Billion)", "format": ".1f" }] }
+            },
+            { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] } },
+            { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "circle", "color": "#0f172a", "size": 70 } }
+          ]
         },
         {
-          "transform": [{ "filter": "datum.year == 2021" }],
-          "mark": { "type": "point", "color": "#1e293b" }
-        },
-        {
-          "transform": [{ "filter": "datum.year == 2025" }],
-          "mark": { "type": "text", "text": "2025 Peak", "dx": 0, "dy": -20, "fontWeight": "bold", "color": "#b91c1c" }
-        },
-        {
-          "transform": [{ "filter": "datum.year == 2025" }],
-          "mark": { "type": "circle", "color": "#b91c1c", "size": 100 }
+          "width": "container", "height": 40,
+          "mark": { "type": "area", "color": "rgba(37, 99, 235, 0.2)" },
+          "params": [{ "name": "brush", "select": { "type": "interval", "encodings": ["x"] } }],
+          "encoding": {
+            "x": { "field": "Year", "type": "ordinal", "axis": { "title": "Drag to zoom", "grid": false, "labelAngle": 0 } },
+            "y": { "field": "Export Value (RM Billion)", "type": "quantitative", "axis": null }
+          }
         }
       ]
     };
