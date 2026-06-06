@@ -436,27 +436,32 @@
       ]
     };
 
-    // 6. Bar Chart
-    var specBar = {
+    var specDumbbell = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+      "data": { "url": "tech_trade_balance.csv", "format": { "type": "csv", "parse": { "Value (RM Billion)": "number" } } },
       "width": "container", "height": 300,
-      "data": { "url": "export_destinations.csv" },
-      "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
+      // 使用 transform 把宽表变长表
+      "transform": [
+        { "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }
+      ],
       "encoding": {
-        "y": { "field": "country", "type": "nominal", "sort": { "field": "exports_bil", "op": "sum", "order": "descending" }, "title": null, "axis": null },
-        "x": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "axis": { "format": ".1f" } }
+        "y": { "field": "Year", "type": "ordinal", "title": "Year", "sort": "-x" }
       },
       "layer": [
         {
-          "mark": { "type": "bar", "cornerRadiusEnd": 4 },
+          "mark": { "type": "rule", "color": "#cbd5e1" },
           "encoding": {
-            "color": { "field": "exports_bil", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
-            "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
+            "x": { "field": "Import", "type": "quantitative" },
+            "x2": { "field": "Export" }
           }
         },
         {
-          "mark": { "type": "text", "align": "left", "x": 10, "color": "white", "fontWeight": "bold", "pointerEvents": "none" },
-          "encoding": { "text": { "field": "country", "type": "nominal" } }
+          "mark": { "type": "circle", "size": 60, "color": "#ef4444" },
+          "encoding": { "x": { "field": "Import", "type": "quantitative" } }
+        },
+        {
+          "mark": { "type": "circle", "size": 60, "color": "#2563eb" },
+          "encoding": { "x": { "field": "Export", "type": "quantitative" } }
         }
       ]
     };
