@@ -294,55 +294,163 @@
       }
     };
 
-    // 3. Line Imports vs Exports (已优化：5年间隔 + 2025终点锁定 + 共享交互)
-    // 3. Line Chart (核弹级修复版：确保交互层在最顶层)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+
       "data": {
         "url": "tech_trade_balance.csv",
-        "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
-      },
-      "width": "container", "height": 320,
-      "encoding": {
-        "x": {
-          "field": "Year", "type": "temporal",
-          "axis": { "title": "Year", "grid": false, "format": "%Y", "tickCount": { "interval": "year", "step": 5 } },
-          "scale": { "domain": [{ "year": 2006 }, { "year": 2025 }] }
-        },
-        "y": {
-          "field": "Value (RM Billion)", "type": "quantitative",
-          "scale": { "zero": false, "padding": 10 },
-          "axis": { "title": "Trade Value (RM Billion)", "grid": true }
-        },
-        "color": {
-          "field": "Trade Type", "type": "nominal",
-          "scale": { "domain": ["Export", "Import"], "range": ["#2563eb", "#ef4444"] },
-          "legend": { "orient": "top-left", "title": null }
-        }
-      },
-      "layer": [
-        // 1. 线条层 (底层)
-        { "mark": { "type": "line", "strokeWidth": 2.5 } },
-        // 2. 圆点层 (中层)
-        { "mark": { "type": "circle", "size": 60, "opacity": 1 } },
-        // 3. 交互工具层 (最顶层 - 确保它是最后一个，这样鼠标才能滑过它)
-        {
-          "transform": [{ "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }],
-          "params": [{
-            "name": "hover",
-            "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
-          }],
-          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
-          "encoding": {
-            "x": { "field": "Year", "type": "temporal" },
-            "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0 },
-            "tooltip": [
-              { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-              { "field": "Export", "type": "quantitative", "title": "Export (RM Billion)", "format": ".1f" },
-              { "field": "Import", "type": "quantitative", "title": "Import (RM Billion)", "format": ".1f" }
-            ]
+        "format": {
+          "type": "csv",
+          "parse": {
+            "Year": "date:'%Y'",
+            "Value (RM Billion)": "number"
           }
         }
+      },
+
+      "width": "container",
+      "height": 320,
+
+      "encoding": {
+        "x": {
+          "field": "Year",
+          "type": "temporal",
+          "axis": {
+            "title": "Year",
+            "format": "%Y",
+            "grid": false,
+            "tickCount": {
+              "interval": "year",
+              "step": 5
+            }
+          },
+          "scale": {
+            "domain": [
+              { "year": 2006 },
+              { "year": 2025 }
+            ]
+          }
+        },
+
+        "y": {
+          "field": "Value (RM Billion)",
+          "type": "quantitative",
+          "title": "Trade Value (RM Billion)",
+          "scale": {
+            "zero": false,
+            "padding": 10
+          }
+        },
+
+        "color": {
+          "field": "Trade Type",
+          "type": "nominal",
+          "scale": {
+            "domain": ["Export", "Import"],
+            "range": ["#2563eb", "#ef4444"]
+          },
+          "legend": {
+            "orient": "top-left",
+            "title": null
+          }
+        }
+      },
+
+      "layer": [
+
+        {
+          "mark": {
+            "type": "line",
+            "strokeWidth": 3
+          }
+        },
+
+        {
+          "mark": {
+            "type": "point",
+            "size": 70
+          }
+        },
+
+        {
+          "params": [
+            {
+              "name": "hover",
+              "select": {
+                "type": "point",
+                "fields": ["Year"],
+                "nearest": true,
+                "on": "mouseover",
+                "clear": "mouseout"
+              }
+            }
+          ],
+
+          "mark": {
+            "type": "point",
+            "size": 150,
+            "opacity": 0,
+            "cursor": "crosshair"
+          },
+
+          "encoding": {
+            "tooltip": [
+              {
+                "field": "Year",
+                "type": "temporal",
+                "timeUnit": "year",
+                "title": "Year"
+              },
+              {
+                "field": "Trade Type",
+                "type": "nominal",
+                "title": "Type"
+              },
+              {
+                "field": "Value (RM Billion)",
+                "type": "quantitative",
+                "title": "Value (RM Billion)",
+                "format": ".1f"
+              }
+            ]
+          }
+        },
+
+        {
+          "transform": [
+            {
+              "filter": {
+                "param": "hover",
+                "empty": false
+              }
+            }
+          ],
+
+          "mark": {
+            "type": "rule",
+            "color": "#94a3b8",
+            "strokeDash": [4, 4]
+          }
+        },
+
+        {
+          "transform": [
+            {
+              "filter": {
+                "param": "hover",
+                "empty": false
+              }
+            }
+          ],
+
+          "mark": {
+            "type": "circle",
+            "size": 120,
+            "stroke": "white",
+            "strokeWidth": 2
+          }
+        }
+
       ]
     };
 
