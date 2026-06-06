@@ -251,43 +251,38 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
-    // 1. Trend (完美精简版：无拖动条、高度合适、2025字样下移防遮挡)
+    // 1. Trend (已统一为 RM Billion)
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
       "transform": [
         { "calculate": "datum.Year", "as": "date" },
-        { "calculate": "datum['Export Value (RM Billion)'] * 1000000000", "as": "exports" }
+        // 移除原始代码中的 *1000000000，直接使用原生 RM Billion 数据
+        { "calculate": "datum['Export Value (RM Billion)']", "as": "exports" }
       ],
       "width": "container",
       "height": 300,
       "encoding": {
         "x": { "field": "date", "type": "ordinal", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
-        "y": { "field": "exports", "type": "quantitative", "scale": { "zero": false, "padding": 20 }, "axis": { "title": "Export Value (RM)", "format": "~s" } }
+        "y": { "field": "exports", "type": "quantitative", "scale": { "zero": false, "padding": 20 }, "axis": { "title": "Export Value (RM Billion)", "format": ".1f" } }
       },
       "layer": [
         { "mark": { "type": "area", "line": { "color": "#2563eb", "strokeWidth": 2 }, "color": { "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear", "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "rgba(37, 99, 235, 0.4)" }] } } },
-        {
-          "transform": [{ "filter": "datum.date == 2021" }],
-          "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": -20, "dy": -20, "fontWeight": "bold", "color": "#1e293b", "align": "right" }
-        },
+        { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": -20, "dy": -20, "fontWeight": "bold", "color": "#1e293b", "align": "right" } },
         { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "point", "color": "#1e293b" } },
-        {
-          "transform": [{ "filter": "datum.date == 2025" }],
-          "mark": { "type": "text", "text": "2025 Peak", "dx": -15, "dy": -5, "fontWeight": "bold", "color": "#b91c1c", "align": "right" }
-        },
+        { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "text", "text": "2025 Peak", "dx": -15, "dy": -5, "fontWeight": "bold", "color": "#b91c1c", "align": "right" } },
         { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "point", "color": "#b91c1c", "size": 100 } },
         {
           "params": [{ "name": "hover", "select": { "type": "point", "fields": ["date"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" },
-          "encoding": { "tooltip": [{ "field": "date", "type": "nominal", "title": "Year" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" }] }
+          "encoding": { "tooltip": [{ "field": "date", "type": "nominal", "title": "Year" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }] }
         },
         { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] } },
         { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "circle", "color": "#0f172a", "size": 70 } }
       ]
     };
 
-    // 2. Donut
+    // 2. Donut (维持原样，展示百分比)
     var specDonut = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 280,
@@ -296,20 +291,14 @@
       "encoding": {
         "theta": { "field": "percentage", "type": "quantitative" },
         "color": { "field": "category", "type": "nominal", "scale": { "scheme": "blues" }, "legend": { "orient": "bottom", "labelLimit": 250, "columns": 2 } },
-        "tooltip": [
-          { "field": "category", "type": "nominal" },
-          { "field": "percentage", "type": "quantitative", "title": "Share", "format": ".1%" }
-        ]
+        "tooltip": [{ "field": "category", "type": "nominal" }, { "field": "percentage", "type": "quantitative", "title": "Share", "format": ".1%" }]
       }
     };
 
-    // 3. Line Imports vs Exports (时间解析修复版)
+    // 3. Line Imports vs Exports (数据本身已是 RM Billion)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": {
-        "url": "tech_trade_balance.csv",
-        "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
-      },
+      "data": { "url": "tech_trade_balance.csv", "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } } },
       "width": "container", "height": 320,
       "encoding": {
         "x": { "field": "Year", "type": "temporal", "axis": { "title": "Year", "grid": false, "format": "%Y", "tickCount": 6 } },
@@ -334,11 +323,11 @@
       ]
     };
 
-    // 4. Map Import (亚洲聚焦 + 名称完美映射修复版)
+    // 4. Map Import (后台除以 10 亿)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 300 },
+      "projection": { "type": "naturalEarth1", "center": [115, 15], "scale": 500 },
       "layer": [
         { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
         {
@@ -346,24 +335,25 @@
           "transform": [
             { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
-            { "filter": "datum.imports > 0" }
+            { "filter": "datum.imports > 0" },
+            { "calculate": "datum.imports / 1000000000", "as": "imports_bil" } // 除以10亿
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "imports", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" } },
+            "color": { "field": "imports_bil", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": ".1f" } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
-            "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Origin Country" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
+            "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Origin Country" }, { "field": "imports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
         }
       ]
     };
 
-    // 5. Map Export (亚洲聚焦 + 名称完美映射修复版)
+    // 5. Map Export (后台除以 10 亿)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 300 },
+      "projection": { "type": "naturalEarth1", "center": [115, 15], "scale": 500 },
       "layer": [
         { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
         {
@@ -371,34 +361,36 @@
           "transform": [
             { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "export_destinations.csv" }, "key": "country", "fields": ["exports"] } },
-            { "filter": "datum.exports > 0" }
+            { "filter": "datum.exports > 0" },
+            { "calculate": "datum.exports / 1000000000", "as": "exports_bil" } // 除以10亿
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" } },
+            "color": { "field": "exports_bil", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": ".1f" } },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
-            "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Destination Country" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
+            "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Destination Country" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
         }
       ]
     };
 
-    // 6. Bar Chart
+    // 6. Bar Chart (后台除以 10 亿)
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "export_destinations.csv" },
+      "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
       "encoding": {
-        "y": { "field": "country", "type": "nominal", "sort": { "field": "exports", "op": "sum", "order": "descending" }, "title": null, "axis": null },
-        "x": { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "axis": { "format": "~s" } }
+        "y": { "field": "country", "type": "nominal", "sort": { "field": "exports_bil", "op": "sum", "order": "descending" }, "title": null, "axis": null },
+        "x": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "axis": { "format": ".1f" } }
       },
       "layer": [
         {
           "mark": { "type": "bar", "cornerRadiusEnd": 4 },
           "encoding": {
-            "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
-            "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
+            "color": { "field": "exports_bil", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
+            "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
         },
         {
@@ -408,64 +400,73 @@
       ]
     };
 
-    // 7. Stacked Bar 
+    // 7. Stacked Bar (Y轴百分比不变，Tooltip 除以 10 亿)
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
       "data": { "url": "market_share.csv" },
-      "transform": [{ "filter": "year(datum.year) >= 2021" }],
+      "transform": [
+        { "filter": "year(datum.year) >= 2021" },
+        { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
+      ],
       "mark": "bar",
       "encoding": {
         "x": { "field": "year", "type": "ordinal", "timeUnit": "year", "title": "Year", "labelAngle": 0 },
         "y": { "field": "exports", "type": "quantitative", "stack": "normalize", "title": "Market Share", "format": "~%" },
         "color": { "field": "country", "type": "nominal", "scale": { "scheme": "set2" }, "legend": { "orient": "bottom" } },
-        "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year" }, { "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "format": "~s" }]
+        "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year" }, { "field": "country", "type": "nominal" }, { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }]
       }
     };
 
-    // 8. Bubble Scatter
+    // 8. Bubble Scatter (进出口全部除以 10 亿)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
       "data": { "url": "trade_balance.csv" },
+      "transform": [
+        { "calculate": "datum.imports / 1000000000", "as": "imports_bil" },
+        { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
+      ],
       "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 },
       "encoding": {
-        "x": { "field": "imports", "type": "quantitative", "title": "Import Value (RM)", "axis": { "format": "~s" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
-        "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "axis": { "format": "~s" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
+        "x": { "field": "imports_bil", "type": "quantitative", "title": "Import Value (RM Billion)", "axis": { "format": ".1f" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
+        "y": { "field": "exports_bil", "type": "quantitative", "title": "Export Value (RM Billion)", "axis": { "format": ".1f" }, "scale": { "zero": true, "nice": true, "padding": 20 } },
         "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [50, 1500] }, "legend": null },
         "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" }, "legend": { "orient": "right", "title": "Country" } },
-        "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports", "type": "quantitative", "title": "Exports", "format": "~s" }, { "field": "imports", "type": "quantitative", "title": "Imports", "format": "~s" }]
+        "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }, { "field": "imports_bil", "type": "quantitative", "title": "Imports (RM Billion)", "format": ".1f" }]
       }
     };
 
-    // 9. Heatmap 
+    // 9. Heatmap (后台除以 10 亿)
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
       "data": { "url": "seasonal_heatmap.csv" },
+      "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
       "mark": { "type": "rect", "tooltip": true, "cornerRadius": 2 },
       "encoding": {
         "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "title": "Month", "axis": { "labelAngle": 0, "labelAlign": "center", "labelBaseline": "top", "domain": false, "ticks": false } },
         "y": { "field": "year", "type": "ordinal", "title": "Year", "axis": { "domain": false, "ticks": false } },
-        "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM)", "format": "~s", "gradientLength": 150 } },
-        "tooltip": [{ "field": "year", "type": "ordinal", "title": "Year" }, { "field": "month", "type": "ordinal", "title": "Month" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" }]
+        "color": { "field": "exports_bil", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM Billion)", "format": ".1f", "gradientLength": 150 } },
+        "tooltip": [{ "field": "year", "type": "ordinal", "title": "Year" }, { "field": "month", "type": "ordinal", "title": "Month" }, { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }]
       }
     };
 
-    // 10. Dashboard 
+    // 10. Dashboard (后台除以 10 亿)
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv", "format": { "type": "csv", "parse": { "exports": "number" } } },
+      "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
       "vconcat": [
         {
           "width": 800, "height": 100, "title": "Total Exports by Product Category (Click to Filter)",
           "params": [{ "name": "category_click", "select": { "type": "point", "fields": ["product"] } }],
           "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
-            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM)", "axis": { "format": "~s" } },
-            "y": { "field": "product", "type": "nominal", "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null },
+            "x": { "field": "exports_bil", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM Billion)", "axis": { "format": ".1f" } },
+            "y": { "field": "product", "type": "nominal", "sort": { "field": "exports_bil", "op": "sum", "order": "descending" }, "axis": null },
             "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" } }, "value": "#cbd5e1" },
-            "tooltip": [{ "field": "product", "title": "Category" }, { "field": "exports", "aggregate": "sum", "title": "Total Exports", "format": "~s" }]
+            "tooltip": [{ "field": "product", "title": "Category" }, { "field": "exports_bil", "aggregate": "sum", "title": "Total Exports (RM Billion)", "format": ".1f" }]
           }
         },
         {
@@ -473,16 +474,15 @@
           "mark": { "type": "line", "point": { "size": 60, "filled": true } },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
-            "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM)", "axis": { "format": "~s" } },
+            "y": { "field": "exports_bil", "type": "quantitative", "title": "Export Value (RM Billion)", "axis": { "format": ".1f" } },
             "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Product Category" } },
             "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 },
-            "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" }, { "field": "product", "title": "Category" }, { "field": "exports", "type": "quantitative", "title": "Value", "format": "~s" }]
+            "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" }, { "field": "product", "title": "Category" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
         }
       ]
     };
 
-    // 核心修复点：这里干净利落地调用每个独立的变量名，绝不抛错
     vegaEmbed('#vis-trend', specTrend, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-donut', specDonut, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-line', specLine, { config: hdConfig, actions: false }).catch(console.error);
