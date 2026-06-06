@@ -349,6 +349,11 @@
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
+      "projection": {
+        "type": "naturalEarth1"
+        "center": [120, 10],
+        "scale": 350
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
@@ -370,7 +375,7 @@
               "legend": { "title": "Imports (RM)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": "~s" }
             },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
-            "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Origin Region" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
+            "tooltip": [{ "field": "properties.name", "type": "nominal", "title": "Origin Country" }, { "field": "imports", "type": "quantitative", "title": "Value (RM)", "format": "~s" }]
           }
         }
       ]
