@@ -251,13 +251,12 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
-    // 1. Trend (已统一为 RM Billion)
+    // 1. Trend
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
       "transform": [
         { "calculate": "datum.Year", "as": "date" },
-        // 移除原始代码中的 *1000000000，直接使用原生 RM Billion 数据
         { "calculate": "datum['Export Value (RM Billion)']", "as": "exports" }
       ],
       "width": "container",
@@ -282,7 +281,7 @@
       ]
     };
 
-    // 2. Donut (维持原样，展示百分比)
+    // 2. Donut
     var specDonut = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 280,
@@ -295,65 +294,106 @@
       }
     };
 
-    // 3. Line Imports vs Exports (数据本身已是 RM Billion)
+    // 3. Line Imports vs Exports (增强版 Shared Tooltip)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "tech_trade_balance.csv", "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } } },
       "width": "container", "height": 320,
-      "encoding": {
-        "x": { "field": "Year", "type": "temporal", "axis": { "title": "Year", "grid": false, "format": "%Y", "tickCount": 6 } },
-        "y": { "field": "Value (RM Billion)", "type": "quantitative", "scale": { "zero": false, "padding": 10 }, "axis": { "title": "Trade Value (RM Billion)", "grid": true } },
-        "color": { "field": "Trade Type", "type": "nominal", "scale": { "domain": ["Export", "Import"], "range": ["#2563eb", "#ef4444"] }, "legend": { "orient": "top-left", "title": null } }
-      },
       "layer": [
-        { "mark": { "type": "line", "strokeWidth": 2.5 } },
-        { "mark": { "type": "point", "size": 50, "filled": true } },
+        // 渲染折线
         {
-          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
-          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] },
+          "mark": { "type": "line", "strokeWidth": 2.5 },
           "encoding": {
+            "x": { "field": "Year", "type": "temporal", "axis": { "title": "Year", "grid": false, "format": "%Y", "tickCount": 6 } },
+            "y": { "field": "Value (RM Billion)", "type": "quantitative", "scale": { "zero": false, "padding": 10 }, "axis": { "title": "Trade Value (RM Billion)", "grid": true } },
+            "color": { "field": "Trade Type", "type": "nominal", "scale": { "domain": ["Export", "Import"], "range": ["#2563eb", "#ef4444"] }, "legend": { "orient": "top-left", "title": null } }
+          }
+        },
+        // 渲染数据点
+        {
+          "mark": { "type": "point", "size": 50, "filled": true },
+          "encoding": {
+            "x": { "field": "Year", "type": "temporal" },
+            "y": { "field": "Value (RM Billion)", "type": "quantitative" },
+            "color": { "field": "Trade Type", "type": "nominal" }
+          }
+        },
+        // 终极共享交互层（通过 pivot 转换，完美实现单框同时显示进出口）
+        {
+          "transform": [
+            { "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }
+          ],
+          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
+          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
+          "encoding": {
+            "x": { "field": "Year", "type": "temporal" },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0 },
             "tooltip": [
               { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-              { "field": "Trade Type", "type": "nominal", "title": "Type" },
-              { "field": "Value (RM Billion)", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
+              { "field": "Export", "type": "quantitative", "title": "Export (RM Billion)", "format": ".1f" },
+              { "field": "Import", "type": "quantitative", "title": "Import (RM Billion)", "format": ".1f" }
             ]
           }
         }
       ]
     };
 
-    // 4. Map Import (后台除以 10 亿)
+    // 4. Map Import (固定图例边界 + 新加坡引线标注)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 300 },
+      "projection": { "type": "naturalEarth1", "center": [115, 15], "scale": 500 },
       "layer": [
+        // 底图
         { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
+        // 数据映射
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
             { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
             { "filter": "datum.imports > 0" },
-            { "calculate": "datum.imports / 1000000000", "as": "imports_bil" } // 除以10亿
+            { "calculate": "datum.imports / 1000000000", "as": "imports_bil" }
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "imports_bil", "type": "quantitative", "scale": { "scheme": "purples" }, "legend": { "title": "Imports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": ".1f" } },
+            "color": {
+              "field": "imports_bil",
+              "type": "quantitative",
+              "scale": { "scheme": "purples", "domain": [0, 220] }, // 强制映射范围 0-220
+              "legend": { "title": "Imports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "values": [0, 50, 100, 150, 200], "format": "d" } // 强制显示明确整数刻度
+            },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Origin Country" }, { "field": "imports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
+        },
+        // 新加坡特殊引线标注层 (Callout Annotation)
+        {
+          "data": { "values": [{ "lon": 103.8, "lat": 1.35, "lon2": 108.5, "lat2": -3.5, "label": "Singapore (110.2)" }] },
+          "layer": [
+            {
+              "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] },
+              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } }
+            },
+            {
+              "mark": { "type": "circle", "color": "#9333ea", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, // 紫色点
+              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } }
+            },
+            {
+              "mark": { "type": "text", "align": "left", "dx": 5, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
+            }
+          ]
         }
       ]
     };
 
-    // 5. Map Export (后台除以 10 亿)
+    // 5. Map Export (固定图例边界 + 新加坡引线标注)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 300 },
+      "projection": { "type": "naturalEarth1", "center": [115, 15], "scale": 500 },
       "layer": [
         { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
         {
@@ -362,20 +402,43 @@
             { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "export_destinations.csv" }, "key": "country", "fields": ["exports"] } },
             { "filter": "datum.exports > 0" },
-            { "calculate": "datum.exports / 1000000000", "as": "exports_bil" } // 除以10亿
+            { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
           ],
           "params": [{ "name": "hover", "select": { "type": "point", "on": "mouseover", "clear": "mouseout" } }],
           "mark": { "type": "geoshape", "stroke": "#0f172a", "strokeWidth": 1 },
           "encoding": {
-            "color": { "field": "exports_bil", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "format": ".1f" } },
+            "color": {
+              "field": "exports_bil",
+              "type": "quantitative",
+              "scale": { "scheme": "oranges", "domain": [0, 220] }, // 统一颜色跨度，便于直接对比
+              "legend": { "title": "Exports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "values": [0, 50, 100, 150, 200], "format": "d" }
+            },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Destination Country" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
+        },
+        // 新加坡特殊引线标注层 (Callout Annotation)
+        {
+          "data": { "values": [{ "lon": 103.8, "lat": 1.35, "lon2": 108.5, "lat2": -3.5, "label": "Singapore (210.5)" }] },
+          "layer": [
+            {
+              "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] },
+              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } }
+            },
+            {
+              "mark": { "type": "circle", "color": "#ea580c", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, // 橙色点
+              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } }
+            },
+            {
+              "mark": { "type": "text", "align": "left", "dx": 5, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
+            }
+          ]
         }
       ]
     };
 
-    // 6. Bar Chart (后台除以 10 亿)
+    // 6. Bar Chart
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
@@ -400,7 +463,7 @@
       ]
     };
 
-    // 7. Stacked Bar (Y轴百分比不变，Tooltip 除以 10 亿)
+    // 7. Stacked Bar
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
@@ -418,7 +481,7 @@
       }
     };
 
-    // 8. Bubble Scatter (进出口全部除以 10 亿)
+    // 8. Bubble Scatter
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -437,7 +500,7 @@
       }
     };
 
-    // 9. Heatmap (后台除以 10 亿)
+    // 9. Heatmap
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
@@ -452,7 +515,7 @@
       }
     };
 
-    // 10. Dashboard (后台除以 10 亿)
+    // 10. Dashboard
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "product_trends.csv", "format": { "type": "csv", "parse": { "exports": "number" } } },
