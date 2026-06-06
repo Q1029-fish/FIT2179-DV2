@@ -340,49 +340,58 @@
       }
     };
 
-    var specLine = {
+    var specTradeBalance = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 280,
-      "data": { "url": "tech_trade_balance.csv" },
-      "transform": [
-        { "filter": "year(datum.year) <= 2025" },
-        { "fold": ["exports", "imports"], "as": ["flow", "value"] },
-        { "calculate": "datum.flow == 'exports' ? 'Exports' : 'Imports'", "as": "FlowName" }
-      ],
+      "data": { "url": "annual_trade_balance.csv" },
+      "width": "container",
+      "height": 320,
+      "encoding": {
+        "x": {
+          "field": "Year",
+          "type": "ordinal",
+          "axis": { "title": "Year", "labelAngle": 0, "grid": false }
+        },
+        "y": {
+          "field": "Value (RM Billion)",
+          "type": "quantitative",
+          "axis": { "title": "Trade Value (RM Billion)", "grid": true }
+        },
+        "color": {
+          "field": "Trade Type",
+          "type": "nominal",
+          "scale": {
+            "domain": ["Export", "Import"],
+            "range": ["#2563eb", "#ef4444"] // 出口使用深蓝，进口使用深红
+          },
+          "legend": { "orient": "top-left", "title": null }
+        }
+      },
       "layer": [
+        // 趋势连线层
         {
-          "mark": { "type": "line", "point": true, "strokeWidth": 3 },
-          "encoding": {
-            "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false, "format": "%Y", "tickCount": 6 } },
-            "y": { "field": "value", "type": "quantitative", "title": "Value (RM)", "axis": { "format": "~s" } },
-            "color": { "field": "FlowName", "type": "nominal", "scale": { "domain": ["Exports", "Imports"], "range": ["#2563eb", "#f59e0b"] }, "legend": { "orient": "bottom", "title": null } }
-          }
+          "mark": { "type": "line", "strokeWidth": 2.5 }
         },
+        // 趋势数据点层
         {
-          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
-          "mark": { "type": "rule", "color": "#64748b", "strokeDash": [4, 4], "strokeWidth": 1.5, "tooltip": true },
+          "mark": { "type": "point", "size": 50, "filled": true }
+        },
+        // 悬停准星交互层（彻底移除了月份，只返回纯净的年度数值）
+        {
+          "params": [{
+            "name": "hover",
+            "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
+          }],
+          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] },
           "encoding": {
-            "x": { "field": "year", "type": "temporal", "timeUnit": "year" },
-            "opacity": { "condition": { "param": "hover", "empty": false }, "value": 0 },
+            "opacity": {
+              "condition": { "param": "hover", "empty": false, "value": 1 },
+              "value": 0
+            },
             "tooltip": [
-              { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "format": "%Y" },
-              { "field": "exports", "type": "quantitative", "title": "Exports (RM)", "format": "~s" },
-              { "field": "imports", "type": "quantitative", "title": "Imports (RM)", "format": "~s" }
+              { "field": "Year", "type": "nominal", "title": "Year" },
+              { "field": "Trade Type", "type": "nominal", "title": "Type" },
+              { "field": "Value (RM Billion)", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
             ]
-          }
-        },
-        {
-          "transform": [{ "filter": { "param": "hover", "empty": false } }],
-          "mark": { "type": "rule", "color": "#64748b", "strokeDash": [4, 4], "strokeWidth": 1.5 },
-          "encoding": { "x": { "field": "year", "type": "temporal", "timeUnit": "year" } }
-        },
-        {
-          "transform": [{ "filter": { "param": "hover", "empty": false } }],
-          "mark": { "type": "circle", "size": 90 },
-          "encoding": {
-            "x": { "field": "year", "type": "temporal", "timeUnit": "year" },
-            "y": { "field": "value", "type": "quantitative" },
-            "color": { "field": "FlowName", "type": "nominal" }
           }
         }
       ]
