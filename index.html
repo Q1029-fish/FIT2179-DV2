@@ -343,21 +343,31 @@
     var specTradeBalance = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "annual_trade_balance.csv" },
+
+      // 核心修复：强制将你的 Year 列解析为 Vega 能够完美处理的时间格式 (YYYY)
+      "transform": [
+        { "calculate": "datetime(datum.Year, 0, 1)", "as": "parsed_year" }
+      ],
+
       "width": "container",
       "height": 320,
       "encoding": {
         "x": {
-          "field": "Year",
-          // 1. 改为 quantitative (连续数值)，让系统自动分配刻度间距
-          "type": "quantitative",
-          // 2. 必须设置 zero: false，否则X轴会从公元 0 年开始画！
-          "scale": { "zero": false },
-          // 3. format: "d" 保证年份显示为 2006，而不是 2,006
-          "axis": { "title": "Year", "grid": false, "format": "d", "tickCount": 5 }
+          "field": "parsed_year",
+          // 改回 temporal，利用 Vega 最强的时间轴渲染器自动处理间距
+          "type": "temporal",
+          "axis": {
+            "title": "Year",
+            "grid": false,
+            "format": "%Y",  // 强制只显示年份，如 2010, 2020
+            "tickCount": "year" // 根据宽度自动分配年份刻度
+          }
         },
         "y": {
           "field": "Value (RM Billion)",
           "type": "quantitative",
+          // 开启 padding 确保最上面的线不会被切掉
+          "scale": { "zero": false, "padding": 10 },
           "axis": { "title": "Trade Value (RM Billion)", "grid": true }
         },
         "color": {
@@ -383,7 +393,7 @@
         {
           "params": [{
             "name": "hover",
-            "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
+            "select": { "type": "point", "fields": ["parsed_year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
           }],
           "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] },
           "encoding": {
@@ -392,8 +402,8 @@
               "value": 0
             },
             "tooltip": [
-              // Tooltip 保持 nominal，这样悬停时依然会干净地显示该点具体的年份
-              { "field": "Year", "type": "nominal", "title": "Year" },
+              // 悬停时依然干净地显示年份
+              { "field": "parsed_year", "type": "temporal", "timeUnit": "year", "title": "Year" },
               { "field": "Trade Type", "type": "nominal", "title": "Type" },
               { "field": "Value (RM Billion)", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
             ]
