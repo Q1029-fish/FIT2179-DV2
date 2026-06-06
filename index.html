@@ -428,17 +428,43 @@
       ]
     };
 
-    var specDumbbell = {
+    // 6. 贸易强度气泡图 (Trade Intensity Bubble Chart)
+    var specIntensityBubble = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": { "url": "tech_trade_balance.csv", "format": { "parse": { "Value (RM Billion)": "number" } } },
-      "width": "container", "height": 300,
-      "transform": [{ "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }],
-      "encoding": { "y": { "field": "Year", "type": "ordinal", "title": "Year", "sort": "-x" } },
-      "layer": [
-        { "mark": { "type": "rule", "color": "#cbd5e1" }, "encoding": { "x": { "field": "Import", "type": "quantitative" }, "x2": { "field": "Export" } } },
-        { "mark": { "type": "circle", "size": 60, "color": "#ef4444" }, "encoding": { "x": { "field": "Import", "type": "quantitative" } } },
-        { "mark": { "type": "circle", "size": 60, "color": "#2563eb" }, "encoding": { "x": { "field": "Export", "type": "quantitative" } } }
-      ]
+      "width": "container",
+      "height": 300,
+      "data": { "url": "trade_intensity.csv" },
+      "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5, "opacity": 0.8 },
+      "encoding": {
+        "x": {
+          "field": "MY Export to Country (RM Bil)",
+          "type": "quantitative",
+          "title": "Export Value (RM Billion)",
+          "scale": { "zero": false }
+        },
+        "y": {
+          "field": "Intensity Index (TII)",
+          "type": "quantitative",
+          "title": "Trade Intensity Index",
+          "scale": { "zero": false }
+        },
+        "size": {
+          "field": "MY Export to Country (RM Bil)",
+          "type": "quantitative",
+          "scale": { "range": [200, 1000] },
+          "legend": null
+        },
+        "color": {
+          "field": "Country",
+          "type": "nominal",
+          "scale": { "scheme": "tableau10" }
+        },
+        "tooltip": [
+          { "field": "Country", "type": "nominal" },
+          { "field": "MY Export to Country (RM Bil)", "title": "Exports (RM Bil)", "format": ".1f" },
+          { "field": "Intensity Index (TII)", "title": "Intensity Index", "format": ".2f" }
+        ]
+      }
     };
 
     // 7. Stacked Bar (已修复：增加强力类型解析)
