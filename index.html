@@ -368,12 +368,20 @@
         {
           "mark": {
             "type": "point",
-            "size": 20,
+            "size": 30,
             "filled": true
           }
         },
 
         {
+          "transform": [
+            {
+              "pivot": "Trade Type",
+              "value": "Value (RM Billion)",
+              "groupby": ["Year"]
+            }
+          ],
+
           "params": [
             {
               "name": "hover",
@@ -388,13 +396,27 @@
           ],
 
           "mark": {
-            "type": "point",
-            "size": 150,
-            "opacity": 0,
-            "cursor": "crosshair"
+            "type": "rule",
+            "color": "#94a3b8",
+            "strokeDash": [4, 4],
+            "strokeWidth": 1.5
           },
 
           "encoding": {
+            "x": {
+              "field": "Year",
+              "type": "temporal"
+            },
+
+            "opacity": {
+              "condition": {
+                "param": "hover",
+                "empty": false,
+                "value": 1
+              },
+              "value": 0
+            },
+
             "tooltip": [
               {
                 "field": "Year",
@@ -403,14 +425,15 @@
                 "title": "Year"
               },
               {
-                "field": "Trade Type",
-                "type": "nominal",
-                "title": "Type"
+                "field": "Export",
+                "type": "quantitative",
+                "title": "Export (RM Billion)",
+                "format": ".1f"
               },
               {
-                "field": "Value (RM Billion)",
+                "field": "Import",
                 "type": "quantitative",
-                "title": "Value (RM Billion)",
+                "title": "Import (RM Billion)",
                 "format": ".1f"
               }
             ]
@@ -428,30 +451,13 @@
           ],
 
           "mark": {
-            "type": "rule",
-            "color": "#94a3b8",
-            "strokeDash": [4, 4]
-          }
-        },
-
-        {
-          "transform": [
-            {
-              "filter": {
-                "param": "hover",
-                "empty": false
-              }
-            }
-          ],
-
-          "mark": {
             "type": "circle",
-            "size": 120,
+            "size": 80,
+            "filled": true,
             "stroke": "white",
-            "strokeWidth": 2
+            "strokeWidth": 1.5
           }
         }
-
       ]
     };
 
