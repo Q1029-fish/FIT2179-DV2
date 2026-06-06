@@ -364,7 +364,7 @@
 
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": 600, "height": 400,
+      "width": "container", "height": 400,
       "projection": {
         "type": "naturalEarth1",
         "center": [130, 7],
@@ -400,6 +400,11 @@
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
+      "projection": {
+        "type": "naturalEarth1",
+        "center": [130, 7],
+        "scale": 220
+      },
       "layer": [
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
