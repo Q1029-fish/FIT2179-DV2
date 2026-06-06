@@ -468,21 +468,40 @@
       ]
     };
 
-    // 7. Stacked Bar
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 300,
+      "width": "container",
+      "height": 300,
       "data": { "url": "market_share.csv" },
       "transform": [
-        { "filter": "year(datum.year) >= 2021" },
-        { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
+        { "calculate": "datum.exports", "as": "exports_bil" }
       ],
       "mark": "bar",
       "encoding": {
-        "x": { "field": "year", "type": "ordinal", "timeUnit": "year", "title": "Year", "labelAngle": 0 },
-        "y": { "field": "exports", "type": "quantitative", "stack": "normalize", "title": "Market Share", "format": "~%" },
-        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "set2" }, "legend": { "orient": "bottom" } },
-        "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year" }, { "field": "country", "type": "nominal" }, { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }]
+        "x": {
+          "field": "year",
+          "type": "ordinal",
+          "title": "Year",
+          "labelAngle": 0
+        },
+        "y": {
+          "field": "exports",
+          "type": "quantitative",
+          "stack": "normalize", // 自动转化为 100% 堆叠占比
+          "title": "Market Share (%)",
+          "format": ".0%"
+        },
+        "color": {
+          "field": "country",
+          "type": "nominal",
+          "scale": { "scheme": "set2" },
+          "legend": { "orient": "bottom", "title": "Partner Country" }
+        },
+        "tooltip": [
+          { "field": "year", "type": "ordinal", "title": "Year" },
+          { "field": "country", "type": "nominal", "title": "Country" },
+          { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }
+        ]
       }
     };
 
