@@ -294,42 +294,57 @@
       }
     };
 
+    // 3. Line Imports vs Exports (已优化：圆点显示、坐标锁定至2025、平均分配刻度)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
         "url": "tech_trade_balance.csv",
-        "format": {
-          "type": "csv",
-          "parse": { "Year": "number", "Value (RM Billion)": "number" }
-        }
+        "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
       },
       "width": "container", "height": 320,
-      "transform": [
-        // 强制把 Year 转为年份数字，Value 直接使用
-        { "calculate": "datum.Year", "as": "year" },
-        { "calculate": "datum['Value (RM Billion)']", "as": "value" }
-      ],
-      "layer": [
-        {
-          "mark": { "type": "line", "strokeWidth": 3 },
-          "encoding": {
-            "x": { "field": "year", "type": "quantitative", "axis": { "format": "d", "tickCount": 10, "title": "Year" }, "scale": { "domain": [2006, 2025] } },
-            "y": { "field": "value", "type": "quantitative", "axis": { "title": "Value (RM Billion)" } },
-            "color": { "field": "Trade Type", "type": "nominal", "scale": { "range": ["#2563eb", "#ef4444"] } }
-          }
+      "encoding": {
+        "x": {
+          "field": "Year",
+          "type": "temporal",
+          "axis": {
+            "title": "Year",
+            "grid": false,
+            "format": "%Y",
+            "tickCount": 10 // 平均分配刻度，确保2006到2025之间分布均匀
+          },
+          // 锁死范围，切掉2026
+          "scale": { "domain": [2006, 2025] }
         },
-        // 共享交互准星线 (Shared Tooltip)
+        "y": {
+          "field": "Value (RM Billion)",
+          "type": "quantitative",
+          "scale": { "zero": false, "padding": 10 },
+          "axis": { "title": "Trade Value (RM Billion)", "grid": true }
+        },
+        "color": {
+          "field": "Trade Type",
+          "type": "nominal",
+          "scale": { "domain": ["Export", "Import"], "range": ["#2563eb", "#ef4444"] },
+          "legend": { "orient": "top-left", "title": null }
+        }
+      },
+      "layer": [
+        // 1. 线条层
+        { "mark": { "type": "line", "strokeWidth": 2.5 } },
+        // 2. 数据圆点层 (每个点都呈现)
+        { "mark": { "type": "circle", "size": 60, "opacity": 1 } },
+        // 3. 交互层
         {
-          "transform": [{ "pivot": "Trade Type", "value": "value", "groupby": ["year"] }],
-          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
-          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] },
+          "transform": [{ "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }],
+          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
+          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
           "encoding": {
-            "x": { "field": "year", "type": "quantitative" },
+            "x": { "field": "Year", "type": "temporal" },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0 },
             "tooltip": [
-              { "field": "year", "title": "Year", "format": "d" },
-              { "field": "Export", "title": "Export (RM Billion)", "format": ".1f" },
-              { "field": "Import", "title": "Import (RM Billion)", "format": ".1f" }
+              { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+              { "field": "Export", "type": "quantitative", "title": "Export (RM Billion)", "format": ".1f" },
+              { "field": "Import", "type": "quantitative", "title": "Import (RM Billion)", "format": ".1f" }
             ]
           }
         }
@@ -436,32 +451,27 @@
       ]
     };
 
-    var specDumbbell = {
+    // 6. Bar Chart
+    var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": { "url": "tech_trade_balance.csv", "format": { "type": "csv", "parse": { "Value (RM Billion)": "number" } } },
       "width": "container", "height": 300,
-      // 使用 transform 把宽表变长表
-      "transform": [
-        { "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }
-      ],
+      "data": { "url": "export_destinations.csv" },
+      "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
       "encoding": {
-        "y": { "field": "Year", "type": "ordinal", "title": "Year", "sort": "-x" }
+        "y": { "field": "country", "type": "nominal", "sort": { "field": "exports_bil", "op": "sum", "order": "descending" }, "title": null, "axis": null },
+        "x": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "axis": { "format": ".1f" } }
       },
       "layer": [
         {
-          "mark": { "type": "rule", "color": "#cbd5e1" },
+          "mark": { "type": "bar", "cornerRadiusEnd": 4 },
           "encoding": {
-            "x": { "field": "Import", "type": "quantitative" },
-            "x2": { "field": "Export" }
+            "color": { "field": "exports_bil", "type": "quantitative", "scale": { "scheme": "tealblues" }, "legend": null },
+            "tooltip": [{ "field": "country", "type": "nominal" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
         },
         {
-          "mark": { "type": "circle", "size": 60, "color": "#ef4444" },
-          "encoding": { "x": { "field": "Import", "type": "quantitative" } }
-        },
-        {
-          "mark": { "type": "circle", "size": 60, "color": "#2563eb" },
-          "encoding": { "x": { "field": "Export", "type": "quantitative" } }
+          "mark": { "type": "text", "align": "left", "x": 10, "color": "white", "fontWeight": "bold", "pointerEvents": "none" },
+          "encoding": { "text": { "field": "country", "type": "nominal" } }
         }
       ]
     };
@@ -472,7 +482,6 @@
       "height": 300,
       "data": { "url": "market_share.csv" },
       "transform": [
-        // 强制转换为 RM Billion 用于 Tooltip 显示
         { "calculate": "datum.exports", "as": "exports_bil" }
       ],
       "mark": "bar",
