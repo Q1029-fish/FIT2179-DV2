@@ -472,6 +472,7 @@
       "height": 300,
       "data": { "url": "market_share.csv" },
       "transform": [
+        // 强制转换为 RM Billion 用于 Tooltip 显示
         { "calculate": "datum.exports", "as": "exports_bil" }
       ],
       "mark": "bar",
