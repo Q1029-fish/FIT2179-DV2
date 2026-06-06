@@ -342,7 +342,7 @@
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 280 },
+      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 320 },
       "layer": [
         // 底图
         { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
@@ -381,7 +381,7 @@
               "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } }
             },
             {
-              "mark": { "type": "text", "align": "left", "dx": 8, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "mark": { "type": "text", "align": "left", "dx": -20, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
               "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
             }
           ]
@@ -393,7 +393,7 @@
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 280 },
+      "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 320 },
       "layer": [
         { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
         {
