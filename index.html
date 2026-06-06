@@ -348,8 +348,12 @@
       "encoding": {
         "x": {
           "field": "Year",
-          "type": "ordinal",
-          "axis": { "title": "Year", "labelAngle": 0, "grid": false }
+          // 1. 改为 quantitative (连续数值)，让系统自动分配刻度间距
+          "type": "quantitative",
+          // 2. 必须设置 zero: false，否则X轴会从公元 0 年开始画！
+          "scale": { "zero": false },
+          // 3. format: "d" 保证年份显示为 2006，而不是 2,006
+          "axis": { "title": "Year", "grid": false, "format": "d", "tickCount": 5 }
         },
         "y": {
           "field": "Value (RM Billion)",
@@ -361,7 +365,7 @@
           "type": "nominal",
           "scale": {
             "domain": ["Export", "Import"],
-            "range": ["#2563eb", "#ef4444"] // 出口使用深蓝，进口使用深红
+            "range": ["#2563eb", "#ef4444"]
           },
           "legend": { "orient": "top-left", "title": null }
         }
@@ -375,7 +379,7 @@
         {
           "mark": { "type": "point", "size": 50, "filled": true }
         },
-        // 悬停准星交互层（彻底移除了月份，只返回纯净的年度数值）
+        // 悬停准星交互层
         {
           "params": [{
             "name": "hover",
@@ -388,6 +392,7 @@
               "value": 0
             },
             "tooltip": [
+              // Tooltip 保持 nominal，这样悬停时依然会干净地显示该点具体的年份
               { "field": "Year", "type": "nominal", "title": "Year" },
               { "field": "Trade Type", "type": "nominal", "title": "Type" },
               { "field": "Value (RM Billion)", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
