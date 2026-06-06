@@ -367,8 +367,6 @@
       "width": "container", "height": 400,
       "projection": {
         "type": "naturalEarth1",
-        "center": [130, 7],
-        "scale": 700
       },
       "layer": [
         {
@@ -379,7 +377,8 @@
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
             {
-              "calculate": "datum.country == 'United States' ? 'United States of America' : datum.country == 'Singapore' ? 'Singapore' : datum.country", "as": "country_standard"
+              "calculate": "datum.country == 'United States' ? 'United States of America' : datum.country == 'Singapore' ? 'Singapore' : datum.country",
+              "as": "country_standard"
             },
             { "lookup": "properties.name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
             { "filter": "datum.imports > 0" }
