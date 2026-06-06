@@ -451,11 +451,14 @@
       ]
     };
 
-    // 6. Bar Chart
+    // 6. Bar Chart (已修复：增加强力类型解析)
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 300,
-      "data": { "url": "export_destinations.csv" },
+      "data": {
+        "url": "export_destinations.csv",
+        "format": { "parse": { "exports": "number" } } // 强力解析
+      },
       "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
       "encoding": {
         "y": { "field": "country", "type": "nominal", "sort": { "field": "exports_bil", "op": "sum", "order": "descending" }, "title": null, "axis": null },
@@ -476,48 +479,39 @@
       ]
     };
 
+    // 7. Stacked Bar (已修复：增加强力类型解析)
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container",
-      "height": 300,
-      "data": { "url": "market_share.csv" },
+      "width": "container", "height": 300,
+      "data": {
+        "url": "market_share.csv",
+        "format": { "parse": { "exports": "number" } } // 强力解析
+      },
       "transform": [
-        { "calculate": "datum.exports", "as": "exports_bil" }
+        { "filter": "datum.year >= 2021" },
+        { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
       ],
       "mark": "bar",
       "encoding": {
-        "x": {
-          "field": "year",
-          "type": "ordinal",
-          "title": "Year",
-          "labelAngle": 0
-        },
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          "stack": "normalize", // 自动转化为 100% 堆叠占比
-          "title": "Market Share (%)",
-          "format": ".0%"
-        },
-        "color": {
-          "field": "country",
-          "type": "nominal",
-          "scale": { "scheme": "set2" },
-          "legend": { "orient": "bottom", "title": "Partner Country" }
-        },
+        "x": { "field": "year", "type": "ordinal", "title": "Year", "labelAngle": 0 },
+        "y": { "field": "exports", "type": "quantitative", "stack": "normalize", "title": "Market Share", "format": ".0%" },
+        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "set2" }, "legend": { "orient": "bottom" } },
         "tooltip": [
-          { "field": "year", "type": "ordinal", "title": "Year" },
-          { "field": "country", "type": "nominal", "title": "Country" },
+          { "field": "year", "type": "ordinal" },
+          { "field": "country", "type": "nominal" },
           { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }
         ]
       }
     };
 
-    // 8. Bubble Scatter
+    // 8. Bubble Scatter (已修复：增加强力类型解析)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
-      "data": { "url": "trade_balance.csv" },
+      "data": {
+        "url": "trade_balance.csv",
+        "format": { "parse": { "imports": "number", "exports": "number" } } // 强力解析
+      },
       "transform": [
         { "calculate": "datum.imports / 1000000000", "as": "imports_bil" },
         { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
