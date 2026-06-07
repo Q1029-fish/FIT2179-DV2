@@ -434,50 +434,50 @@
       }
     };
 
-    // 7. 终极爆改：市场份额变成绝对增长趋势线 (Multi-Line Trend)
-    var specPartnerTrend = {
+    // 7. 簇状柱状图 (Grouped Bar Chart) - 彻底解决折线图疲劳，展示绝对体量对比
+    var specGroupedBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
         "url": "market_share.csv",
-        "format": { "type": "csv", "parse": { "year": "date:'%Y'", "exports": "number" } }
+        "format": { "type": "csv", "parse": { "year": "number", "exports": "number" } }
       },
-      "width": "container", "height": 320,
+      "width": "container",
+      "height": 320,
+      "mark": { "type": "bar", "cornerRadiusTop": 4 }, // 圆角柱子显得更现代
       "encoding": {
-        // 使用 temporal 完美解决横向坐标问题
-        "x": { "field": "year", "type": "temporal", "axis": { "title": "Year", "format": "%Y", "grid": false, "tickCount": 5 } }
-      },
-      "layer": [
-        {
-          "encoding": {
-            "y": { "field": "exports", "type": "quantitative", "title": "Export Volume (RM Billion)", "scale": { "zero": false, "padding": 10 } },
-            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "set2" }, "legend": { "orient": "bottom", "title": null } }
-          },
-          "layer": [
-            { "mark": { "type": "line", "strokeWidth": 3 } },
-            { "mark": { "type": "point", "size": 40, "filled": true } },
-            { "transform": [{ "filter": { "param": "hover7", "empty": false } }], "mark": { "type": "circle", "size": 100, "filled": true, "stroke": "white", "strokeWidth": 2 } }
-          ]
+        // 大 X 轴：年份
+        "x": {
+          "field": "year",
+          "type": "ordinal",
+          "title": "Year",
+          "axis": { "labelAngle": 0, "grid": false }
         },
-        // 专门为图 7 打造的高级联合悬浮窗
-        {
-          "transform": [{ "pivot": "country", "value": "exports", "groupby": ["year"] }],
-          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
-          "encoding": { "opacity": { "condition": { "param": "hover7", "empty": false, "value": 1 }, "value": 0 } }
+        // 小 X 轴 (xOffset)：在同一年份内，按国家并排分组
+        "xOffset": {
+          "field": "country",
+          "type": "nominal"
         },
-        {
-          "transform": [{ "pivot": "country", "value": "exports", "groupby": ["year"] }],
-          "mark": { "type": "point", "size": 200, "opacity": 0, "cursor": "crosshair" },
-          "params": [{ "name": "hover7", "select": { "type": "point", "fields": ["year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
-          "encoding": {
-            "tooltip": [
-              { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-              { "field": "Singapore", "type": "quantitative", "title": "Singapore (RM Bil)", "format": ".1f" },
-              { "field": "China", "type": "quantitative", "title": "China (RM Bil)", "format": ".1f" },
-              { "field": "Japan", "type": "quantitative", "title": "Japan (RM Bil)", "format": ".1f" }
-            ]
-          }
-        }
-      ]
+        // Y 轴：绝对出口额
+        "y": {
+          "field": "exports",
+          "type": "quantitative",
+          "title": "Export Volume (RM Billion)",
+          "scale": { "padding": 10 },
+          "axis": { "grid": true }
+        },
+        // 颜色：区分国家
+        "color": {
+          "field": "country",
+          "type": "nominal",
+          "scale": { "scheme": "set2" },
+          "legend": { "orient": "bottom", "title": null }
+        },
+        "tooltip": [
+          { "field": "year", "type": "ordinal", "title": "Year" },
+          { "field": "country", "type": "nominal", "title": "Country" },
+          { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }
+        ]
+      }
     };
 
     // 8. Bubble Scatter
@@ -553,8 +553,8 @@
     vegaEmbed('#vis-map-export', specMapExport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-bar', specIntensityBar, { config: hdConfig, actions: false }).catch(console.error);
 
-    // 图 7 挂载了全新的折线趋势图
-    vegaEmbed('#vis-stacked', specPartnerTrend, { config: hdConfig, actions: false }).catch(console.error);
+    // 图 7 挂载全新的簇状柱状图
+    vegaEmbed('#vis-stacked', specGroupedBar, { config: hdConfig, actions: false }).catch(console.error);
 
     vegaEmbed('#vis-scatter', specScatter, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig, actions: false }).catch(console.error);
