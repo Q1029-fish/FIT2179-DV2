@@ -571,7 +571,7 @@
       }
     };
 
-    // 10. Deep Dive Dashboard (已融合满分 Storytelling 逻辑)
+    // 10. Deep Dive Dashboard (with click interaction and shared tooltip)
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
@@ -582,9 +582,9 @@
         { "calculate": "datum.exports > 10000 ? datum.exports / 1000000000 : datum.exports", "as": "exports_bil" }
       ],
       "vconcat": [
+        // ---------- Part 1: Bar Chart (Click to select category) ----------
         {
           "width": 800, "height": 100,
-          // 修改了这里的内部标题
           "title": {
             "text": "Total Export Value by Category (2021-2025)",
             "subtitle": "Click a bar to isolate the trend below. Click empty space to reset.",
@@ -602,30 +602,54 @@
             ]
           }
         },
+        // ---------- Part 2: Line Chart (Trend display and shared tooltip) ----------
         {
           "width": 800, "height": 200,
-          // 修改了这里的内部标题
           "title": "Historical Growth Trajectory",
-          "params": [{
-            "name": "hover_line",
-            "select": { "type": "point", "fields": ["product"], "on": "mouseover", "clear": "mouseout" }
-          }],
-          "mark": { "type": "line", "point": { "size": 60, "filled": true } },
           "encoding": {
-            "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
-            "y": { "field": "exports_bil", "type": "quantitative", "title": "Export Value (RM Billion)", "axis": { "format": ".1f" }, "scale": { "zero": false } },
-            "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Product Category" } },
-            "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 },
-            "strokeWidth": {
-              "condition": { "param": "hover_line", "empty": false, "value": 4 },
-              "value": 2
+            "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } }
+          },
+          "layer": [
+            // Layer 1: Original line and data points
+            {
+              "params": [{
+                "name": "hover_line",
+                "select": { "type": "point", "fields": ["product"], "on": "mouseover", "clear": "mouseout" }
+              }],
+              "mark": { "type": "line", "point": { "size": 60, "filled": true } },
+              "encoding": {
+                "y": { "field": "exports_bil", "type": "quantitative", "title": "Export Value (RM Billion)", "axis": { "format": ".1f" }, "scale": { "zero": false } },
+                "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Product Category" } },
+                "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 },
+                "strokeWidth": {
+                  "condition": { "param": "hover_line", "empty": false, "value": 4 },
+                  "value": 2
+                }
+              }
             },
-            "tooltip": [
-              { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-              { "field": "product", "title": "Category" },
-              { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
-            ]
-          }
+            // Layer 2: Vertical reference line and shared tooltip
+            {
+              "transform": [
+                { "pivot": "product", "value": "exports_bil", "groupby": ["year"] }
+              ],
+              "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5, "cursor": "crosshair" },
+              "params": [{
+                "name": "hover_year",
+                "select": { "type": "point", "fields": ["year"], "nearest": true, "on": "mouseover", "clear": "mouseout" }
+              }],
+              "encoding": {
+                "opacity": { "condition": { "param": "hover_year", "empty": false, "value": 1 }, "value": 0 },
+                "tooltip": [
+                  { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+                  // IMPORTANT: Replace the 'field' values below with the exact category names from your CSV file.
+                  { "field": "Exact Category 1 Name in CSV", "type": "quantitative", "title": "Display Name 1", "format": ".1f" },
+                  { "field": "Exact Category 2 Name in CSV", "type": "quantitative", "title": "Display Name 2", "format": ".1f" },
+                  { "field": "Exact Category 3 Name in CSV", "type": "quantitative", "title": "Display Name 3", "format": ".1f" },
+                  { "field": "Exact Category 4 Name in CSV", "type": "quantitative", "title": "Display Name 4", "format": ".1f" }
+                ]
+              }
+            }
+          ]
         }
       ]
     };
