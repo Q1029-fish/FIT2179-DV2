@@ -342,7 +342,7 @@
       ]
     };
 
-    // 4. Map Import (已增加：香港独立标注引线，完美居中与左右避让)
+    // 4. Map Import
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -369,32 +369,33 @@
         {
           "data": {
             "values": [
-              // 新加坡在线的左边 (align: right, dx: -5 向左偏移)
-              { "lon": 103.8, "lat": 1.35, "lon2": 90, "lat2": 1.35, "label": "Singapore (110.2)", "align": "right", "dx": -50 },
-              // 香港在线的右边 (align: left, dx: 5 向右偏移)
-              { "lon": 114.1, "lat": 22.3, "lon2": 130, "lat2": 22.3, "label": "Hong Kong (4.2)", "align": "left", "dx": 50 }
+              { "city": "SG", "lon": 103.8, "lat": 1.35, "lon2": 90, "lat2": 1.35, "label": "Singapore (110.2)" },
+              { "city": "HK", "lon": 114.1, "lat": 22.3, "lon2": 130, "lat2": 22.3, "label": "Hong Kong (4.2)" }
             ]
           },
           "layer": [
+            // 虚线层
             { "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } } },
+            // 圆点层
             { "mark": { "type": "circle", "color": "#9333ea", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } } },
-            // 文本层：增加 baseline: "middle" 保证虚线对准文字正中间
+            // 新加坡文字层 (强制左靠齐，dx 负数)
             {
-              "mark": { "type": "text", "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
-              "encoding": {
-                "longitude": { "field": "lon2" },
-                "latitude": { "field": "lat2" },
-                "text": { "field": "label" },
-                "align": { "field": "align", "type": "nominal" },
-                "dx": { "field": "dx", "type": "quantitative" }
-              }
+              "transform": [{ "filter": "datum.city == 'SG'" }],
+              "mark": { "type": "text", "align": "right", "dx": -20, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
+            },
+            // 香港文字层 (强制右靠齐，dx 正数)
+            {
+              "transform": [{ "filter": "datum.city == 'HK'" }],
+              "mark": { "type": "text", "align": "left", "dx": 20, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
             }
           ]
         }
       ]
     };
 
-    // 5. Map Export (已增加：香港独立标注引线，完美居中与左右避让)
+    // 5. Map Export
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -421,25 +422,24 @@
         {
           "data": {
             "values": [
-              // 新加坡在线的左边 (align: right, dx: -5 向左偏移)
-              { "lon": 103.8, "lat": 1.35, "lon2": 90, "lat2": 1.35, "label": "Singapore (210.5)", "align": "right", "dx": -50 },
-              // 香港在线的右边 (align: left, dx: 5 向右偏移)
-              { "lon": 114.1, "lat": 22.3, "lon2": 130, "lat2": 22.3, "label": "Hong Kong (85.4)", "align": "left", "dx": 50 }
+              { "city": "SG", "lon": 103.8, "lat": 1.35, "lon2": 90, "lat2": 1.35, "label": "Singapore (210.5)" },
+              { "city": "HK", "lon": 114.1, "lat": 22.3, "lon2": 130, "lat2": 22.3, "label": "Hong Kong (85.4)" }
             ]
           },
           "layer": [
             { "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } } },
             { "mark": { "type": "circle", "color": "#ea580c", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } } },
-            // 文本层：增加 baseline: "middle" 保证虚线对准文字正中间
+            // 新加坡文字层
             {
-              "mark": { "type": "text", "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
-              "encoding": {
-                "longitude": { "field": "lon2" },
-                "latitude": { "field": "lat2" },
-                "text": { "field": "label" },
-                "align": { "field": "align", "type": "nominal" },
-                "dx": { "field": "dx", "type": "quantitative" }
-              }
+              "transform": [{ "filter": "datum.city == 'SG'" }],
+              "mark": { "type": "text", "align": "right", "dx": -20, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
+            },
+            // 香港文字层
+            {
+              "transform": [{ "filter": "datum.city == 'HK'" }],
+              "mark": { "type": "text", "align": "left", "dx": 20, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
             }
           ]
         }
