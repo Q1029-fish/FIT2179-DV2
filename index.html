@@ -251,7 +251,7 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
-    // 1. Trend
+    // 1. Trend (修复：将 params 提升到顶级，避免非法跨图层引用)
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
@@ -261,23 +261,24 @@
       ],
       "width": "container",
       "height": 300,
+      "params": [{ "name": "hover", "select": { "type": "point", "fields": ["date"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
       "encoding": {
-        "x": { "field": "date", "type": "ordinal", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } },
-        "y": { "field": "exports", "type": "quantitative", "scale": { "zero": false, "padding": 20 }, "axis": { "title": "Export Value (RM Billion)", "format": ".1f" } }
+        "x": { "field": "date", "type": "ordinal", "axis": { "title": "Year", "grid": false, "labelAngle": 0 } }
       },
       "layer": [
-        { "mark": { "type": "area", "line": { "color": "#2563eb", "strokeWidth": 2 }, "color": { "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear", "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "rgba(37, 99, 235, 0.4)" }] } } },
-        { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": -20, "dy": -20, "fontWeight": "bold", "color": "#1e293b", "align": "right" } },
-        { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "point", "color": "#1e293b" } },
-        { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "text", "text": "2025 Peak", "dx": -15, "dy": -5, "fontWeight": "bold", "color": "#b91c1c", "align": "right" } },
-        { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "point", "color": "#b91c1c", "size": 100 } },
         {
-          "params": [{ "name": "hover", "select": { "type": "point", "fields": ["date"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
-          "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" },
-          "encoding": { "tooltip": [{ "field": "date", "type": "nominal", "title": "Year" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }] }
-        },
-        { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] } },
-        { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "circle", "color": "#0f172a", "size": 70 } }
+          "encoding": { "y": { "field": "exports", "type": "quantitative", "scale": { "zero": false, "padding": 20 }, "axis": { "title": "Export Value (RM Billion)", "format": ".1f" } } },
+          "layer": [
+            { "mark": { "type": "area", "line": { "color": "#2563eb", "strokeWidth": 2 }, "color": { "x1": 1, "y1": 1, "x2": 1, "y2": 0, "gradient": "linear", "stops": [{ "offset": 0, "color": "white" }, { "offset": 1, "color": "rgba(37, 99, 235, 0.4)" }] } } },
+            { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "text", "text": "Post-Pandemic Surge", "dx": -20, "dy": -20, "fontWeight": "bold", "color": "#1e293b", "align": "right" } },
+            { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "point", "color": "#1e293b" } },
+            { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "text", "text": "2025 Peak", "dx": -15, "dy": -5, "fontWeight": "bold", "color": "#b91c1c", "align": "right" } },
+            { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "point", "color": "#b91c1c", "size": 100 } },
+            { "mark": { "type": "point", "size": 150, "opacity": 0, "cursor": "crosshair" }, "encoding": { "tooltip": [{ "field": "date", "type": "nominal", "title": "Year" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }] } },
+            { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4] } },
+            { "transform": [{ "filter": { "param": "hover", "empty": false } }], "mark": { "type": "circle", "color": "#0f172a", "size": 70 } }
+          ]
+        }
       ]
     };
 
@@ -294,7 +295,7 @@
       }
     };
 
-    // 3. Line Imports vs Exports (已修复数据穿透问题，交互完美回归)
+    // 3. Line Imports vs Exports (修复：将 params 提升至全局，确保你的圆点动画能正确读取到 hover 信号)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
@@ -302,7 +303,10 @@
         "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
       },
       "width": "container", "height": 320,
-      // 注意：全局只定义 X 轴，这样就不会和交互层的透视数据冲突
+      // 全局定义参数，彻底解决 Unrecognized signal name 报错！
+      "params": [
+        { "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }
+      ],
       "encoding": {
         "x": {
           "field": "Year", "type": "temporal",
@@ -311,7 +315,6 @@
         }
       },
       "layer": [
-        // 子图层 1：包裹折线和点，它们使用原始的 y 和 color 数据
         {
           "encoding": {
             "y": { "field": "Value (RM Billion)", "type": "quantitative", "title": "Trade Value (RM Billion)", "scale": { "zero": false, "padding": 10 } },
@@ -319,23 +322,21 @@
           },
           "layer": [
             { "mark": { "type": "line", "strokeWidth": 3 } },
-            { "mark": { "type": "point", "size": 60, "filled": true, "opacity": 1 } }
+            { "mark": { "type": "point", "size": 30, "filled": true } },
+            // 高亮圆点层被正确放在这里，共享外部的 x, y 和 color
+            {
+              "transform": [{ "filter": { "param": "hover", "empty": false } }],
+              "mark": { "type": "circle", "size": 100, "filled": true, "stroke": "white", "strokeWidth": 2, "opacity": 1 }
+            }
           ]
         },
-        // 子图层 2：交互隔离层（因为这层没有定义 y 和 color，所以不会因为找不到字段报错！）
         {
           "transform": [
             { "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }
           ],
-          "params": [
-            { "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }
-          ],
           "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
           "encoding": {
-            "opacity": {
-              "condition": { "param": "hover", "empty": false, "value": 1 },
-              "value": 0
-            },
+            "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0 },
             "tooltip": [
               { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
               { "field": "Export", "type": "quantitative", "title": "Export (RM Billion)", "format": ".1f" },
@@ -424,40 +425,22 @@
       ]
     };
 
-    // 6. 热力条形图 (Color-Mapped Bar Chart) - 替换原本的气泡图
-    var specIntensityBar = {
+    // 6. Intensity Bubble Chart (已修改安全解析逻辑，适应你的 CSV 复杂列名)
+    var specIntensityBubble = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container",
-      "height": 300,
+      "height": 320,
       "data": { "url": "trade_intensity.csv" },
       "transform": [
-        // 读取真实的 CSV 列名
         { "calculate": "toNumber(datum['MY Export to Country (RM Bil)'])", "as": "ExportVal" },
         { "calculate": "toNumber(datum['Intensity Index (TII)'])", "as": "TIIVal" }
       ],
-      "mark": { "type": "bar", "cornerRadiusEnd": 4 },
+      "mark": { "type": "circle", "opacity": 0.8, "stroke": "black", "strokeWidth": 0.5 },
       "encoding": {
-        "y": {
-          "field": "Country",
-          "type": "nominal",
-          // 根据出口量从大到小排序
-          "sort": { "field": "ExportVal", "op": "sum", "order": "descending" },
-          "title": null,
-          "axis": { "labelFontWeight": "bold", "labelFontSize": 12 }
-        },
-        "x": {
-          "field": "ExportVal",
-          "type": "quantitative",
-          "title": "Export Value (RM Billion)"
-        },
-        "color": {
-          "field": "TIIVal",
-          "type": "quantitative",
-          // 使用橙红色系展现“强度/热度”
-          "scale": { "scheme": "oranges" },
-          "title": "Trade Intensity Index (TII)",
-          "legend": { "orient": "bottom", "direction": "horizontal", "gradientLength": 200 }
-        },
+        "x": { "field": "ExportVal", "type": "quantitative", "title": "Export Value (RM Billion)" },
+        "y": { "field": "TIIVal", "type": "quantitative", "title": "Trade Intensity Index", "scale": { "zero": false } },
+        "size": { "field": "ExportVal", "type": "quantitative", "scale": { "range": [200, 1500] }, "legend": null },
+        "color": { "field": "Country", "type": "nominal", "scale": { "scheme": "tableau10" } },
         "tooltip": [
           { "field": "Country", "type": "nominal" },
           { "field": "ExportVal", "type": "quantitative", "title": "Exports (RM Bil)", "format": ".1f" },
@@ -555,10 +538,7 @@
     vegaEmbed('#vis-line', specLine, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-import', specMapImport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-export', specMapExport, { config: hdConfig, actions: false }).catch(console.error);
-
-    // 关键修正点：图 6 现在正确地挂载了 specIntensityBubble
     vegaEmbed('#vis-bar', specIntensityBubble, { config: hdConfig, actions: false }).catch(console.error);
-
     vegaEmbed('#vis-stacked', specStacked, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-scatter', specScatter, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig, actions: false }).catch(console.error);
