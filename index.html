@@ -476,24 +476,27 @@
       }
     };
 
-    // 8. Bubble Scatter (去标签极简版：依赖悬浮提示和图例交互)
+    // 8. Bubble Scatter (极限空间优化版：自适应非对称坐标轴 + 交互防遮挡)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 450,
       "layer": [
+        // 1. 贸易平衡基准线 (y=x)
+        // 既然 X 轴最大是 140，线画到 (140, 140) 就会刚好碰到右侧边缘
         {
-          "data": { "values": [{ "x": 0, "y": 0 }, { "x": 230, "y": 230 }] },
+          "data": { "values": [{ "x": 0, "y": 0 }, { "x": 140, "y": 140 }] },
           "mark": { "type": "line", "strokeDash": [5, 5], "color": "#94a3b8", "strokeWidth": 2 },
           "encoding": {
             "x": { "field": "x", "type": "quantitative" },
             "y": { "field": "y", "type": "quantitative" }
           }
         },
+        // 2. 贸易顺逆差文字 (坐标已根据新轴距重新调整)
         {
           "data": {
             "values": [
-              { "x": 40, "y": 200, "text": "Trade Surplus (Export > Import)" },
-              { "x": 180, "y": 40, "text": "Trade Deficit (Import > Export)" }
+              { "x": 30, "y": 190, "text": "Trade Surplus (Export > Import)" },
+              { "x": 105, "y": 20, "text": "Trade Deficit (Import > Export)" }
             ]
           },
           "mark": { "type": "text", "color": "#64748b", "fontSize": 14, "fontWeight": "bold", "opacity": 0.4 },
@@ -503,6 +506,7 @@
             "text": { "field": "text", "type": "nominal" }
           }
         },
+        // 3. 主数据层 (气泡与悬浮窗)
         {
           "data": {
             "url": "asian_trade_balance.csv",
@@ -515,9 +519,12 @@
           }],
           "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5 },
           "encoding": {
-            "x": { "field": "imports", "type": "quantitative", "title": "Imports (RM Billion)", "scale": { "domain": [0, 230] } },
-            "y": { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "scale": { "domain": [0, 230] } },
-            "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 2500] }, "legend": null },
+            // X 轴截断到 140，横向拉开气泡间距！
+            "x": { "field": "imports", "type": "quantitative", "title": "Imports (RM Billion)", "scale": { "domain": [0, 140] } },
+            // Y 轴截断到 220
+            "y": { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "scale": { "domain": [0, 220] } },
+            // 稍微缩小一点点气泡上限 (从2500降到2000)，能进一步减少拥挤
+            "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 2000] }, "legend": null },
             "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Country (Click to Isolate)" } },
             "opacity": { "condition": { "param": "country_select", "value": 0.85 }, "value": 0.1 },
             "tooltip": [
