@@ -434,7 +434,7 @@
       }
     };
 
-    // 7. 簇状柱状图 (Grouped Bar Chart) - 彻底解决折线图疲劳，展示绝对体量对比
+    // 7. 簇状柱状图 (Grouped Bar Chart) - 已优化：强制按“从低到高”走势排列
     var specGroupedBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
@@ -443,21 +443,20 @@
       },
       "width": "container",
       "height": 320,
-      "mark": { "type": "bar", "cornerRadiusTop": 4 }, // 圆角柱子显得更现代
+      "mark": { "type": "bar", "cornerRadiusTop": 4 },
       "encoding": {
-        // 大 X 轴：年份
         "x": {
           "field": "year",
           "type": "ordinal",
           "title": "Year",
           "axis": { "labelAngle": 0, "grid": false }
         },
-        // 小 X 轴 (xOffset)：在同一年份内，按国家并排分组
+        // 小 X 轴：强制将同一年的国家按出口额从低到高排列
         "xOffset": {
           "field": "country",
-          "type": "nominal"
+          "type": "nominal",
+          "sort": { "field": "exports", "op": "sum", "order": "ascending" } // 关键排序代码
         },
-        // Y 轴：绝对出口额
         "y": {
           "field": "exports",
           "type": "quantitative",
@@ -465,11 +464,12 @@
           "scale": { "padding": 10 },
           "axis": { "grid": true }
         },
-        // 颜色：区分国家
         "color": {
           "field": "country",
           "type": "nominal",
           "scale": { "scheme": "set2" },
+          // 图例也同步从低到高排列，与柱子视觉统一
+          "sort": { "field": "exports", "op": "sum", "order": "ascending" },
           "legend": { "orient": "bottom", "title": null }
         },
         "tooltip": [
