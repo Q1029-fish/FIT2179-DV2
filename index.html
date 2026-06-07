@@ -198,9 +198,9 @@
 
     <div class="grid-2-col">
       <div class="grid-card">
-        <h3>6. Top Global Buyers</h3>
-        <p class="story-text">A sorted view of the golden triangle of demand. Singapore acts as a massive transshipment
-          hub, immediately followed by the superpowers.</p>
+        <h3>6. Top Global Buyers (Volume & Intensity)</h3>
+        <p class="story-text">A sorted view of the golden triangle of demand. The length of the bar represents export
+          volume, while the color intensity reveals their dependence (Intensity Index) on our supply.</p>
         <div id="vis-bar" class="vis-container"></div>
       </div>
       <div class="grid-card">
@@ -251,7 +251,7 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
-    // 1. Trend (修复：将 params 提升到顶级，避免非法跨图层引用)
+    // 1. Trend
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
@@ -295,7 +295,7 @@
       }
     };
 
-    // 3. Line Imports vs Exports (修复：将 params 提升至全局，确保你的圆点动画能正确读取到 hover 信号)
+    // 3. Line Imports vs Exports 
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
@@ -303,7 +303,6 @@
         "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
       },
       "width": "container", "height": 320,
-      // 全局定义参数，彻底解决 Unrecognized signal name 报错！
       "params": [
         { "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }
       ],
@@ -323,7 +322,6 @@
           "layer": [
             { "mark": { "type": "line", "strokeWidth": 3 } },
             { "mark": { "type": "point", "size": 30, "filled": true } },
-            // 高亮圆点层被正确放在这里，共享外部的 x, y 和 color
             {
               "transform": [{ "filter": { "param": "hover", "empty": false } }],
               "mark": { "type": "circle", "size": 100, "filled": true, "stroke": "white", "strokeWidth": 2, "opacity": 1 }
@@ -425,8 +423,10 @@
       ]
     };
 
-    // 6. Intensity Bubble Chart (已修改安全解析逻辑，适应你的 CSV 复杂列名)
-    var specIntensityBubble = {
+    // ==========================================
+    // 6. 热力条形图 (Color-Mapped Bar Chart) - 这是全新的！
+    // ==========================================
+    var specIntensityBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container",
       "height": 320,
@@ -435,12 +435,27 @@
         { "calculate": "toNumber(datum['MY Export to Country (RM Bil)'])", "as": "ExportVal" },
         { "calculate": "toNumber(datum['Intensity Index (TII)'])", "as": "TIIVal" }
       ],
-      "mark": { "type": "circle", "opacity": 0.8, "stroke": "black", "strokeWidth": 0.5 },
+      "mark": { "type": "bar", "cornerRadiusEnd": 4 },
       "encoding": {
-        "x": { "field": "ExportVal", "type": "quantitative", "title": "Export Value (RM Billion)" },
-        "y": { "field": "TIIVal", "type": "quantitative", "title": "Trade Intensity Index", "scale": { "zero": false } },
-        "size": { "field": "ExportVal", "type": "quantitative", "scale": { "range": [200, 1500] }, "legend": null },
-        "color": { "field": "Country", "type": "nominal", "scale": { "scheme": "tableau10" } },
+        "y": {
+          "field": "Country",
+          "type": "nominal",
+          "sort": { "field": "ExportVal", "op": "sum", "order": "descending" },
+          "title": null,
+          "axis": { "labelFontWeight": "bold", "labelFontSize": 12 }
+        },
+        "x": {
+          "field": "ExportVal",
+          "type": "quantitative",
+          "title": "Export Value (RM Billion)"
+        },
+        "color": {
+          "field": "TIIVal",
+          "type": "quantitative",
+          "scale": { "scheme": "oranges" },
+          "title": "Trade Intensity Index (TII)",
+          "legend": { "orient": "bottom", "direction": "horizontal", "gradientLength": 200 }
+        },
         "tooltip": [
           { "field": "Country", "type": "nominal" },
           { "field": "ExportVal", "type": "quantitative", "title": "Exports (RM Bil)", "format": ".1f" },
@@ -538,7 +553,10 @@
     vegaEmbed('#vis-line', specLine, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-import', specMapImport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-export', specMapExport, { config: hdConfig, actions: false }).catch(console.error);
-    vegaEmbed('#vis-bar', specIntensityBubble, { config: hdConfig, actions: false }).catch(console.error);
+
+    // 图 6 挂载了全新的条形图 specIntensityBar
+    vegaEmbed('#vis-bar', specIntensityBar, { config: hdConfig, actions: false }).catch(console.error);
+
     vegaEmbed('#vis-stacked', specStacked, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-scatter', specScatter, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig, actions: false }).catch(console.error);
