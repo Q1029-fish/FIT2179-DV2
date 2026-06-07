@@ -205,7 +205,7 @@
       </div>
       <div class="grid-card">
         <h3>7. Core Partner Growth Trajectory</h3>
-        <p class="story-text">Instead of static market share, this trend line reveals the sheer absolute volume surge
+        <p class="story-text">Instead of static market share, this grouped chart reveals the sheer absolute volume surge
           among our top 3 partners, highlighting an expanding global reliance post-2021.</p>
         <div id="vis-stacked" class="vis-container"></div>
       </div>
@@ -213,8 +213,8 @@
 
     <div class="chart-card">
       <h3>8. The Trade Balance: Imports vs. Exports</h3>
-      <p class="story-text">Are we in a trade surplus or deficit with specific partners? Countries plotted higher on the
-        Y-axis represent strong export destinations.</p>
+      <p class="story-text">Are we in a trade surplus or deficit with specific partners? Click on the legend to isolate
+        countries. Those above the dashed parity line represent strong export destinations (Surplus).</p>
       <div id="vis-scatter" class="vis-container"></div>
     </div>
 
@@ -224,7 +224,7 @@
     <div class="chart-card">
       <h3>9. Seasonal Surges: When Does Export Peak?</h3>
       <p class="story-text">Tech manufacturing is highly cyclical. Notice the consistent darkening of colors towards the
-        third and fourth quarters (Q3/Q4).</p>
+        third and fourth quarters (Q3/Q4), representing final assembly rushes for year-end electronics.</p>
       <div id="vis-heatmap" class="vis-container"></div>
     </div>
 
@@ -251,7 +251,7 @@
 
     var worldGeoJson = "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json";
 
-    // 1. Trend (已修复图层作用域隔离，绝不瘫痪)
+    // 1. Trend
     var specTrend = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": { "url": "monthly_ee_exports.csv" },
@@ -270,7 +270,6 @@
         { "transform": [{ "filter": "datum.date == 2021" }], "mark": { "type": "point", "color": "#1e293b" } },
         { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "text", "text": "2025 Peak", "dx": -15, "dy": -5, "fontWeight": "bold", "color": "#b91c1c", "align": "right" } },
         { "transform": [{ "filter": "datum.date == 2025" }], "mark": { "type": "point", "color": "#b91c1c", "size": 100 } },
-        // 专用的透明交互层，完美包裹 hover
         {
           "mark": { "type": "point", "size": 200, "opacity": 0, "cursor": "crosshair" },
           "params": [{ "name": "hover1", "select": { "type": "point", "fields": ["date"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }],
@@ -294,7 +293,7 @@
       }
     };
 
-    // 3. Line Imports vs Exports (交互隔离与修复)
+    // 3. Line Imports vs Exports
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
@@ -321,13 +320,11 @@
             { "transform": [{ "filter": { "param": "hover3", "empty": false } }], "mark": { "type": "circle", "size": 100, "filled": true, "stroke": "white", "strokeWidth": 2, "opacity": 1 } }
           ]
         },
-        // 完全独立的准星线层
         {
           "transform": [{ "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }],
           "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
           "encoding": { "opacity": { "condition": { "param": "hover3", "empty": false, "value": 1 }, "value": 0 } }
         },
-        // 完全独立的隐形交互点层
         {
           "transform": [{ "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }],
           "mark": { "type": "point", "size": 250, "opacity": 0, "cursor": "crosshair" },
@@ -343,7 +340,7 @@
       ]
     };
 
-    // 4. Map Import
+    // 4. Map Import (已修复台湾匹配问题)
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -353,7 +350,8 @@
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
-            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
+            // 核心修复：匹配台湾的多种叫法
+            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' || datum.properties.name == 'Taiwan' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' || datum.properties.name == 'Hong Kong' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
             { "filter": "datum.imports > 0" },
             { "calculate": "datum.imports / 1000000000", "as": "imports_bil" }
@@ -377,7 +375,7 @@
       ]
     };
 
-    // 5. Map Export
+    // 5. Map Export (已修复台湾匹配问题)
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -387,7 +385,7 @@
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
-            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
+            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' || datum.properties.name == 'Taiwan' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' || datum.properties.name == 'Hong Kong' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "export_destinations.csv" }, "key": "country", "fields": ["exports"] } },
             { "filter": "datum.exports > 0" },
             { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
@@ -411,7 +409,7 @@
       ]
     };
 
-    // 6. 热力条形图 (Color-Mapped Bar Chart)
+    // 6. 热力条形图
     var specIntensityBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container",
@@ -434,7 +432,7 @@
       }
     };
 
-    // 7. 簇状柱状图 (Grouped Bar Chart) - 已优化：强制按“从低到高”走势排列
+    // 7. 簇状柱状图
     var specGroupedBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "data": {
@@ -451,11 +449,10 @@
           "title": "Year",
           "axis": { "labelAngle": 0, "grid": false }
         },
-        // 小 X 轴：强制将同一年的国家按出口额从低到高排列
         "xOffset": {
           "field": "country",
           "type": "nominal",
-          "sort": { "field": "exports", "op": "sum", "order": "ascending" } // 关键排序代码
+          "sort": { "field": "exports", "op": "sum", "order": "ascending" }
         },
         "y": {
           "field": "exports",
@@ -468,7 +465,6 @@
           "field": "country",
           "type": "nominal",
           "scale": { "scheme": "set2" },
-          // 图例也同步从低到高排列，与柱子视觉统一
           "sort": { "field": "exports", "op": "sum", "order": "ascending" },
           "legend": { "orient": "bottom", "title": null }
         },
@@ -480,22 +476,14 @@
       }
     };
 
-    // 8. Bubble Scatter (终极爆改：亚洲数据 + 45度顺逆差等值线 + 交互图例防遮挡)
+    // ==========================================
+    // 8. Bubble Scatter (终极爆改：图层逻辑彻底无冲突！)
+    // ==========================================
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 450,
-      "data": {
-        "url": "asian_trade_balance.csv",
-        "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } }
-      },
-      // 顶级交互参数：绑定图例
-      "params": [{
-        "name": "country_select",
-        "select": { "type": "point", "fields": ["country"] },
-        "bind": "legend"
-      }],
       "layer": [
-        // 1. 45度贸易平衡线 (背景基准线)
+        // 背景层：45度基准线 (纯粹线条，无数据交互)
         {
           "data": { "values": [{ "x": 0, "y": 0 }, { "x": 230, "y": 230 }] },
           "mark": { "type": "line", "strokeDash": [5, 5], "color": "#94a3b8", "strokeWidth": 2 },
@@ -504,7 +492,7 @@
             "y": { "field": "y", "type": "quantitative" }
           }
         },
-        // 2. 顺逆差背景文字提示
+        // 背景层：贸易顺逆差文字 (纯粹文字，无数据交互)
         {
           "data": {
             "values": [
@@ -519,21 +507,29 @@
             "text": { "field": "text", "type": "nominal" }
           }
         },
-        // 3. 气泡与标签层 (共享坐标轴)
+        // 主数据层：包裹所有亚洲国家气泡，隔离交互影响！
         {
+          "data": {
+            "url": "asian_trade_balance.csv",
+            "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } }
+          },
+          // Params 放在这里！只对包含 country 的数据生效
+          "params": [{
+            "name": "country_select",
+            "select": { "type": "point", "fields": ["country"] },
+            "bind": "legend"
+          }],
           "encoding": {
-            // 强制 X 和 Y 的范围一致 (0-230)，保证 45 度线是正斜率
             "x": { "field": "imports", "type": "quantitative", "title": "Imports (RM Billion)", "scale": { "domain": [0, 230] } },
             "y": { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "scale": { "domain": [0, 230] } },
             "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Country (Click to Isolate)" } }
           },
           "layer": [
-            // 子层 A: 气泡本身
+            // 子层：圆圈气泡
             {
               "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5 },
               "encoding": {
                 "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 2500] }, "legend": null },
-                // 交互逻辑：未选中时透明度降至 0.1
                 "opacity": { "condition": { "param": "country_select", "value": 0.85 }, "value": 0.1 },
                 "tooltip": [
                   { "field": "country", "title": "Partner" },
@@ -543,12 +539,11 @@
                 ]
               }
             },
-            // 子层 B: 国家名称标签 (自带避让算法)
+            // 子层：国家名称文字 (去掉 avoidMarks 防止严格检查报错，用 dx/dy 控制位置)
             {
-              "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 11, "avoidMarks": true },
+              "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 11 },
               "encoding": {
                 "text": { "field": "country", "type": "nominal" },
-                // 让文字标签跟气泡一起随着点击图例变淡
                 "opacity": { "condition": { "param": "country_select", "value": 1 }, "value": 0.1 }
               }
             }
@@ -557,14 +552,11 @@
       ]
     };
 
-    // 9. Heatmap (已修复：去除了除以10亿的错误计算，直接读取亚洲最新数据)
+    // 9. Heatmap
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
-      "data": {
-        "url": "seasonal_heatmap.csv",
-        "format": { "type": "csv", "parse": { "year": "number", "exports": "number" } }
-      },
+      "data": { "url": "seasonal_heatmap.csv" },
       "mark": { "type": "rect", "tooltip": true, "cornerRadius": 2 },
       "encoding": {
         "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "title": "Month", "axis": { "labelAngle": 0, "labelAlign": "center", "labelBaseline": "top", "domain": false, "ticks": false } },
@@ -611,11 +603,11 @@
     vegaEmbed('#vis-map-import', specMapImport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-export', specMapExport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-bar', specIntensityBar, { config: hdConfig, actions: false }).catch(console.error);
-
-    // 图 7 挂载全新的簇状柱状图
     vegaEmbed('#vis-stacked', specGroupedBar, { config: hdConfig, actions: false }).catch(console.error);
 
+    // 图 8 全新防崩溃机制上线！
     vegaEmbed('#vis-scatter', specScatter, { config: hdConfig, actions: false }).catch(console.error);
+
     vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-dashboard', specDashboard, { config: hdConfig, actions: false }).catch(console.error);
   </script>
