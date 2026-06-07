@@ -424,23 +424,40 @@
       ]
     };
 
-    // 6. Intensity Bubble Chart (已修复真实的 CSV 列名读取机制，杜绝瘫痪)
-    var specIntensityBubble = {
+    // 6. 热力条形图 (Color-Mapped Bar Chart) - 替换原本的气泡图
+    var specIntensityBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container",
-      "height": 320,
+      "height": 300,
       "data": { "url": "trade_intensity.csv" },
       "transform": [
-        // 直接读取你 CSV 里真实的复杂列名，避免 parse 错误
+        // 读取真实的 CSV 列名
         { "calculate": "toNumber(datum['MY Export to Country (RM Bil)'])", "as": "ExportVal" },
         { "calculate": "toNumber(datum['Intensity Index (TII)'])", "as": "TIIVal" }
       ],
-      "mark": { "type": "circle", "opacity": 0.8, "stroke": "black", "strokeWidth": 0.5 },
+      "mark": { "type": "bar", "cornerRadiusEnd": 4 },
       "encoding": {
-        "x": { "field": "ExportVal", "type": "quantitative", "title": "Export Value (RM Billion)" },
-        "y": { "field": "TIIVal", "type": "quantitative", "title": "Trade Intensity Index", "scale": { "zero": false } },
-        "size": { "field": "ExportVal", "type": "quantitative", "scale": { "range": [200, 1500] }, "legend": null },
-        "color": { "field": "Country", "type": "nominal", "scale": { "scheme": "tableau10" } },
+        "y": {
+          "field": "Country",
+          "type": "nominal",
+          // 根据出口量从大到小排序
+          "sort": { "field": "ExportVal", "op": "sum", "order": "descending" },
+          "title": null,
+          "axis": { "labelFontWeight": "bold", "labelFontSize": 12 }
+        },
+        "x": {
+          "field": "ExportVal",
+          "type": "quantitative",
+          "title": "Export Value (RM Billion)"
+        },
+        "color": {
+          "field": "TIIVal",
+          "type": "quantitative",
+          // 使用橙红色系展现“强度/热度”
+          "scale": { "scheme": "oranges" },
+          "title": "Trade Intensity Index (TII)",
+          "legend": { "orient": "bottom", "direction": "horizontal", "gradientLength": 200 }
+        },
         "tooltip": [
           { "field": "Country", "type": "nominal" },
           { "field": "ExportVal", "type": "quantitative", "title": "Exports (RM Bil)", "format": ".1f" },
