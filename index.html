@@ -383,13 +383,13 @@
             // 新加坡文字层 (强制左靠齐，dx 负数)
             {
               "transform": [{ "filter": "datum.city == 'SG'" }],
-              "mark": { "type": "text", "align": "right", "dx": -10, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "mark": { "type": "text", "align": "right", "dx": -8, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
               "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
             },
             // 香港文字层 (强制右靠齐，dx 正数)
             {
               "transform": [{ "filter": "datum.city == 'HK'" }],
-              "mark": { "type": "text", "align": "left", "dx": 10, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "mark": { "type": "text", "align": "left", "dx": 8, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
               "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
             }
           ]
@@ -434,13 +434,13 @@
             // 新加坡文字层
             {
               "transform": [{ "filter": "datum.city == 'SG'" }],
-              "mark": { "type": "text", "align": "right", "dx": -10, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "mark": { "type": "text", "align": "right", "dx": -8, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
               "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
             },
             // 香港文字层
             {
               "transform": [{ "filter": "datum.city == 'HK'" }],
-              "mark": { "type": "text", "align": "left", "dx": 10, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
+              "mark": { "type": "text", "align": "left", "dx": 8, "baseline": "middle", "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
               "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
             }
           ]
@@ -627,7 +627,7 @@
                 }
               }
             },
-            // Layer 2: Vertical reference line and shared tooltip
+            // Layer 2: Vertical reference line and shared tooltip mapped exactly to the CSV data
             {
               "transform": [
                 { "pivot": "product", "value": "exports_bil", "groupby": ["year"] }
@@ -641,11 +641,10 @@
                 "opacity": { "condition": { "param": "hover_year", "empty": false, "value": 1 }, "value": 0 },
                 "tooltip": [
                   { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
-                  // IMPORTANT: Replace the 'field' values below with the exact category names from your CSV file.
-                  { "field": "Exact Category 1 Name in CSV", "type": "quantitative", "title": "Display Name 1", "format": ".1f" },
-                  { "field": "Exact Category 2 Name in CSV", "type": "quantitative", "title": "Display Name 2", "format": ".1f" },
-                  { "field": "Exact Category 3 Name in CSV", "type": "quantitative", "title": "Display Name 3", "format": ".1f" },
-                  { "field": "Exact Category 4 Name in CSV", "type": "quantitative", "title": "Display Name 4", "format": ".1f" }
+                  { "field": "Semiconductors & ICs", "type": "quantitative", "title": "Semiconductors & ICs", "format": ".1f" },
+                  { "field": "Telecommunications", "type": "quantitative", "title": "Telecommunications", "format": ".1f" },
+                  { "field": "Computing Equipment", "type": "quantitative", "title": "Computing Equipment", "format": ".1f" },
+                  { "field": "Consumer Electronics", "type": "quantitative", "title": "Consumer Electronics", "format": ".1f" }
                 ]
               }
             }
