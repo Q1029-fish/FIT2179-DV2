@@ -294,182 +294,65 @@
       }
     };
 
+    // 3. Line Imports vs Exports (已修复数据穿透问题，交互完美回归)
     var specLine = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-
       "data": {
         "url": "tech_trade_balance.csv",
-        "format": {
-          "type": "csv",
-          "parse": {
-            "Year": "date:'%Y'",
-            "Value (RM Billion)": "number"
-          }
-        }
+        "format": { "type": "csv", "parse": { "Year": "date:'%Y'", "Value (RM Billion)": "number" } }
       },
-
-      "width": "container",
-      "height": 320,
-
+      "width": "container", "height": 320,
+      // 注意：全局只定义 X 轴，这样就不会和交互层的透视数据冲突
       "encoding": {
         "x": {
-          "field": "Year",
-          "type": "temporal",
-          "axis": {
-            "title": "Year",
-            "format": "%Y",
-            "grid": false,
-            "tickCount": {
-              "interval": "year",
-              "step": 5
-            }
-          },
-          "scale": {
-            "domain": [
-              { "year": 2006 },
-              { "year": 2025 }
-            ]
-          }
-        },
-
-        "y": {
-          "field": "Value (RM Billion)",
-          "type": "quantitative",
-          "title": "Trade Value (RM Billion)",
-          "scale": {
-            "zero": false,
-            "padding": 10
-          }
-        },
-
-        "color": {
-          "field": "Trade Type",
-          "type": "nominal",
-          "scale": {
-            "domain": ["Export", "Import"],
-            "range": ["#2563eb", "#ef4444"]
-          },
-          "legend": {
-            "orient": "top-left",
-            "title": null
-          }
+          "field": "Year", "type": "temporal",
+          "axis": { "title": "Year", "format": "%Y", "grid": false, "tickCount": { "interval": "year", "step": 5 } },
+          "scale": { "domain": [{ "year": 2006 }, { "year": 2025 }] }
         }
       },
-
       "layer": [
-
+        // 子图层 1：包裹折线和点，它们使用原始的 y 和 color 数据
         {
-          "mark": {
-            "type": "line",
-            "strokeWidth": 3
-          }
+          "encoding": {
+            "y": { "field": "Value (RM Billion)", "type": "quantitative", "title": "Trade Value (RM Billion)", "scale": { "zero": false, "padding": 10 } },
+            "color": { "field": "Trade Type", "type": "nominal", "scale": { "domain": ["Export", "Import"], "range": ["#2563eb", "#ef4444"] }, "legend": { "orient": "top-left", "title": null } }
+          },
+          "layer": [
+            { "mark": { "type": "line", "strokeWidth": 3 } },
+            { "mark": { "type": "point", "size": 60, "filled": true, "opacity": 1 } }
+          ]
         },
-
-        {
-          "mark": {
-            "type": "point",
-            "size": 30,
-            "filled": true
-          }
-        },
-
+        // 子图层 2：交互隔离层（因为这层没有定义 y 和 color，所以不会因为找不到字段报错！）
         {
           "transform": [
-            {
-              "pivot": "Trade Type",
-              "value": "Value (RM Billion)",
-              "groupby": ["Year"]
-            }
+            { "pivot": "Trade Type", "value": "Value (RM Billion)", "groupby": ["Year"] }
           ],
-
           "params": [
-            {
-              "name": "hover",
-              "select": {
-                "type": "point",
-                "fields": ["Year"],
-                "nearest": true,
-                "on": "mouseover",
-                "clear": "mouseout"
-              }
-            }
+            { "name": "hover", "select": { "type": "point", "fields": ["Year"], "nearest": true, "on": "mouseover", "clear": "mouseout" } }
           ],
-
-          "mark": {
-            "type": "rule",
-            "color": "#94a3b8",
-            "strokeDash": [4, 4],
-            "strokeWidth": 1.5
-          },
-
+          "mark": { "type": "rule", "color": "#94a3b8", "strokeDash": [4, 4], "strokeWidth": 1.5 },
           "encoding": {
-            "x": {
-              "field": "Year",
-              "type": "temporal"
-            },
-
             "opacity": {
-              "condition": {
-                "param": "hover",
-                "empty": false,
-                "value": 1
-              },
+              "condition": { "param": "hover", "empty": false, "value": 1 },
               "value": 0
             },
-
             "tooltip": [
-              {
-                "field": "Year",
-                "type": "temporal",
-                "timeUnit": "year",
-                "title": "Year"
-              },
-              {
-                "field": "Export",
-                "type": "quantitative",
-                "title": "Export (RM Billion)",
-                "format": ".1f"
-              },
-              {
-                "field": "Import",
-                "type": "quantitative",
-                "title": "Import (RM Billion)",
-                "format": ".1f"
-              }
+              { "field": "Year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+              { "field": "Export", "type": "quantitative", "title": "Export (RM Billion)", "format": ".1f" },
+              { "field": "Import", "type": "quantitative", "title": "Import (RM Billion)", "format": ".1f" }
             ]
-          }
-        },
-
-        {
-          "transform": [
-            {
-              "filter": {
-                "param": "hover",
-                "empty": false
-              }
-            }
-          ],
-
-          "mark": {
-            "type": "circle",
-            "size": 80,
-            "filled": true,
-            "stroke": "white",
-            "strokeWidth": 1.5
           }
         }
       ]
     };
 
-    // 4. Map Import (固定图例边界 + 新加坡引线标注)
+    // 4. Map Import 
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
       "projection": { "type": "naturalEarth1", "center": [120, 20], "scale": 320 },
       "layer": [
-        // 底图
         { "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } }, "mark": { "type": "geoshape", "fill": "#e2e8f0", "stroke": "#64748b", "strokeWidth": 0.5 } },
-        // 数据映射
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
@@ -484,35 +367,25 @@
             "color": {
               "field": "imports_bil",
               "type": "quantitative",
-              "scale": { "scheme": "purples", "domain": [0, 220] }, // 强制映射范围 0-220
-              "legend": { "title": "Imports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "values": [0, 50, 100, 150, 200], "format": "d" } // 强制显示明确整数刻度
+              "scale": { "scheme": "purples", "domain": [0, 220] },
+              "legend": { "title": "Imports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "values": [0, 50, 100, 150, 200], "format": "d" }
             },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Origin Country" }, { "field": "imports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
         },
-        // 新加坡特殊引线标注层 (Callout Annotation)
         {
           "data": { "values": [{ "lon": 103.8, "lat": 1.35, "lon2": 90, "lat2": 1.35, "label": "Singapore (110.2)" }] },
           "layer": [
-            {
-              "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] },
-              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } }
-            },
-            {
-              "mark": { "type": "circle", "color": "#9333ea", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, // 紫色点
-              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } }
-            },
-            {
-              "mark": { "type": "text", "align": "left", "dx": -100, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
-              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
-            }
+            { "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } } },
+            { "mark": { "type": "circle", "color": "#9333ea", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } } },
+            { "mark": { "type": "text", "align": "left", "dx": -100, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 }, "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } } }
           ]
         }
       ]
     };
 
-    // 5. Map Export (固定图例边界 + 新加坡引线标注)
+    // 5. Map Export 
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -533,239 +406,83 @@
             "color": {
               "field": "exports_bil",
               "type": "quantitative",
-              "scale": { "scheme": "oranges", "domain": [0, 220] }, // 统一颜色跨度，便于直接对比
+              "scale": { "scheme": "oranges", "domain": [0, 220] },
               "legend": { "title": "Exports (RM Billion)", "orient": "bottom", "direction": "horizontal", "gradientLength": 200, "values": [0, 50, 100, 150, 200], "format": "d" }
             },
             "opacity": { "condition": { "param": "hover", "empty": false, "value": 1 }, "value": 0.7 },
             "tooltip": [{ "field": "geo_name", "type": "nominal", "title": "Destination Country" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
           }
         },
-        // 新加坡特殊引线标注层 (Callout Annotation)
         {
           "data": { "values": [{ "lon": 103.8, "lat": 1.35, "lon2": 90, "lat2": 1.35, "label": "Singapore (210.5)" }] },
           "layer": [
-            {
-              "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] },
-              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } }
-            },
-            {
-              "mark": { "type": "circle", "color": "#ea580c", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, // 橙色点
-              "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } }
-            },
-            {
-              "mark": { "type": "text", "align": "left", "dx": -100, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 },
-              "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } }
-            }
+            { "mark": { "type": "rule", "color": "#0f172a", "strokeWidth": 1.2, "strokeDash": [3, 3] }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" }, "longitude2": { "field": "lon2" }, "latitude2": { "field": "lat2" } } },
+            { "mark": { "type": "circle", "color": "#ea580c", "size": 40, "opacity": 1, "stroke": "white", "strokeWidth": 1 }, "encoding": { "longitude": { "field": "lon" }, "latitude": { "field": "lat" } } },
+            { "mark": { "type": "text", "align": "left", "dx": -100, "dy": 0, "fontWeight": "bold", "color": "#0f172a", "fontSize": 12 }, "encoding": { "longitude": { "field": "lon2" }, "latitude": { "field": "lat2" }, "text": { "field": "label" } } }
           ]
         }
       ]
     };
 
+    // 6. Intensity Bubble Chart (已修复真实的 CSV 列名读取机制，杜绝瘫痪)
     var specIntensityBubble = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-
       "width": "container",
       "height": 320,
-
-      "data": {
-        "url": "trade_intensity.csv",
-        "format": {
-          "type": "csv",
-          "parse": {
-            "Export": "number",
-            "TII": "number"
-          }
-        }
-      },
-
-      "mark": {
-        "type": "circle",
-        "opacity": 0.8,
-        "stroke": "black",
-        "strokeWidth": 0.5
-      },
-
+      "data": { "url": "trade_intensity.csv" },
+      "transform": [
+        // 直接读取你 CSV 里真实的复杂列名，避免 parse 错误
+        { "calculate": "toNumber(datum['MY Export to Country (RM Bil)'])", "as": "ExportVal" },
+        { "calculate": "toNumber(datum['Intensity Index (TII)'])", "as": "TIIVal" }
+      ],
+      "mark": { "type": "circle", "opacity": 0.8, "stroke": "black", "strokeWidth": 0.5 },
       "encoding": {
-        "x": {
-          "field": "Export",
-          "type": "quantitative",
-          "title": "Export Value (RM Billion)"
-        },
-
-        "y": {
-          "field": "TII",
-          "type": "quantitative",
-          "title": "Trade Intensity Index"
-        },
-
-        "size": {
-          "field": "Export",
-          "type": "quantitative",
-          "scale": {
-            "range": [200, 1500]
-          }
-        },
-
-        "color": {
-          "field": "Country",
-          "type": "nominal",
-          "scale": {
-            "scheme": "tableau10"
-          }
-        },
-
+        "x": { "field": "ExportVal", "type": "quantitative", "title": "Export Value (RM Billion)" },
+        "y": { "field": "TIIVal", "type": "quantitative", "title": "Trade Intensity Index", "scale": { "zero": false } },
+        "size": { "field": "ExportVal", "type": "quantitative", "scale": { "range": [200, 1500] }, "legend": null },
+        "color": { "field": "Country", "type": "nominal", "scale": { "scheme": "tableau10" } },
         "tooltip": [
-          { "field": "Country" },
-          { "field": "Export", "format": ".1f" },
-          { "field": "TII", "format": ".2f" }
+          { "field": "Country", "type": "nominal" },
+          { "field": "ExportVal", "type": "quantitative", "title": "Exports (RM Bil)", "format": ".1f" },
+          { "field": "TIIVal", "type": "quantitative", "title": "Intensity Index", "format": ".2f" }
         ]
       }
     };
 
+    // 7. Stacked Bar
     var specStacked = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-
-      "width": "container",
-      "height": 320,
-
-      "data": {
-        "url": "market_share.csv",
-        "format": {
-          "type": "csv",
-          "parse": {
-            "year": "number",
-            "exports": "number"
-          }
-        }
-      },
-
+      "width": "container", "height": 320,
+      "data": { "url": "market_share.csv", "format": { "type": "csv", "parse": { "year": "number", "exports": "number" } } },
       "mark": "bar",
-
       "encoding": {
-
-        "x": {
-          "field": "year",
-          "type": "ordinal",
-          "title": "Year"
-        },
-
-        "y": {
-          "field": "exports",
-          "type": "quantitative",
-          "stack": "normalize",
-          "title": "Market Share",
-          "axis": {
-            "format": "%"
-          }
-        },
-
-        "color": {
-          "field": "country",
-          "type": "nominal",
-          "scale": {
-            "scheme": "set2"
-          }
-        },
-
+        "x": { "field": "year", "type": "ordinal", "title": "Year" },
+        "y": { "field": "exports", "type": "quantitative", "stack": "normalize", "title": "Market Share", "axis": { "format": "%" } },
+        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "set2" } },
         "tooltip": [
-          { "field": "year" },
-          { "field": "country" },
-          {
-            "field": "exports",
-            "title": "Exports (RM Billion)",
-            "format": ".1f"
-          }
+          { "field": "year" }, { "field": "country" }, { "field": "exports", "title": "Exports (RM Billion)", "format": ".1f" }
         ]
       }
     };
 
+    // 8. Bubble Scatter
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-
-      "width": "container",
-      "height": 400,
-
-      "data": {
-        "url": "trade_balance.csv",
-        "format": {
-          "type": "csv",
-          "parse": {
-            "imports": "number",
-            "exports": "number",
-            "total_trade": "number"
-          }
-        }
-      },
-
+      "width": "container", "height": 400,
+      "data": { "url": "trade_balance.csv", "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } } },
       "transform": [
-        {
-          "calculate": "datum.imports/1000000000",
-          "as": "imports_bil"
-        },
-        {
-          "calculate": "datum.exports/1000000000",
-          "as": "exports_bil"
-        },
-        {
-          "calculate": "datum.total_trade/1000000000",
-          "as": "trade_bil"
-        }
+        { "calculate": "datum.imports/1000000000", "as": "imports_bil" },
+        { "calculate": "datum.exports/1000000000", "as": "exports_bil" },
+        { "calculate": "datum.total_trade/1000000000", "as": "trade_bil" }
       ],
-
-      "mark": {
-        "type": "circle",
-        "stroke": "black",
-        "strokeWidth": 0.5,
-        "opacity": 0.8
-      },
-
+      "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5, "opacity": 0.8 },
       "encoding": {
-
-        "x": {
-          "field": "imports_bil",
-          "type": "quantitative",
-          "title": "Imports (RM Billion)"
-        },
-
-        "y": {
-          "field": "exports_bil",
-          "type": "quantitative",
-          "title": "Exports (RM Billion)"
-        },
-
-        "size": {
-          "field": "trade_bil",
-          "type": "quantitative",
-          "scale": {
-            "range": [100, 2500]
-          }
-        },
-
-        "color": {
-          "field": "country",
-          "type": "nominal",
-          "scale": {
-            "scheme": "category10"
-          }
-        },
-
+        "x": { "field": "imports_bil", "type": "quantitative", "title": "Imports (RM Billion)" },
+        "y": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)" },
+        "size": { "field": "trade_bil", "type": "quantitative", "scale": { "range": [100, 2500] } },
+        "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" } },
         "tooltip": [
-          { "field": "country" },
-          {
-            "field": "imports_bil",
-            "title": "Imports",
-            "format": ".1f"
-          },
-          {
-            "field": "exports_bil",
-            "title": "Exports",
-            "format": ".1f"
-          },
-          {
-            "field": "trade_bil",
-            "title": "Total Trade",
-            "format": ".1f"
-          }
+          { "field": "country" }, { "field": "imports_bil", "title": "Imports", "format": ".1f" }, { "field": "exports_bil", "title": "Exports", "format": ".1f" }, { "field": "trade_bil", "title": "Total Trade", "format": ".1f" }
         ]
       }
     };
@@ -816,19 +533,16 @@
       ]
     };
 
-    // 确保这几个 ID 与 HTML 中的 <div id="..."> 完全一致
     vegaEmbed('#vis-trend', specTrend, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-donut', specDonut, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-line', specLine, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-import', specMapImport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-export', specMapExport, { config: hdConfig, actions: false }).catch(console.error);
 
-    // 图 6：哑铃图 (注意这里改成了 specDumbbell)
-    vegaEmbed('#vis-bar', specDumbbell, { config: hdConfig, actions: false }).catch(console.error);
+    // 关键修正点：图 6 现在正确地挂载了 specIntensityBubble
+    vegaEmbed('#vis-bar', specIntensityBubble, { config: hdConfig, actions: false }).catch(console.error);
 
-    // 图 7：堆叠柱状图
     vegaEmbed('#vis-stacked', specStacked, { config: hdConfig, actions: false }).catch(console.error);
-
     vegaEmbed('#vis-scatter', specScatter, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-dashboard', specDashboard, { config: hdConfig, actions: false }).catch(console.error);
