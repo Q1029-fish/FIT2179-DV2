@@ -340,7 +340,7 @@
       ]
     };
 
-    // 4. Map Import (已修复台湾匹配问题)
+    // 4. Map Import (已修复：精准匹配 CSV 里的 "Taiwan(China)")
     var specMapImport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -350,8 +350,8 @@
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
-            // 核心修复：匹配台湾的多种叫法
-            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' || datum.properties.name == 'Taiwan' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' || datum.properties.name == 'Hong Kong' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
+            // 核心修复：强制让地图上的台湾叫 "Taiwan(China)"，从而完美匹配你的 CSV
+            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' || datum.properties.name == 'Taiwan' ? 'Taiwan(China)' : (datum.properties.name == 'Hong Kong S.A.R.' || datum.properties.name == 'Hong Kong' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "import_origins.csv" }, "key": "country", "fields": ["imports"] } },
             { "filter": "datum.imports > 0" },
             { "calculate": "datum.imports / 1000000000", "as": "imports_bil" }
@@ -375,7 +375,7 @@
       ]
     };
 
-    // 5. Map Export (已修复台湾匹配问题)
+    // 5. Map Export (已修复：精准匹配 CSV 里的 "Taiwan(China)")
     var specMapExport = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 400,
@@ -385,7 +385,7 @@
         {
           "data": { "url": worldGeoJson, "format": { "type": "json", "property": "features" } },
           "transform": [
-            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' || datum.properties.name == 'Taiwan' ? 'Taiwan' : (datum.properties.name == 'Hong Kong S.A.R.' || datum.properties.name == 'Hong Kong' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
+            { "calculate": "datum.properties.name == 'Republic of Singapore' ? 'Singapore' : (datum.properties.name == 'Taiwan, Province of China' || datum.properties.name == 'Taiwan' ? 'Taiwan(China)' : (datum.properties.name == 'Hong Kong S.A.R.' || datum.properties.name == 'Hong Kong' ? 'Hong Kong' : datum.properties.name))", "as": "geo_name" },
             { "lookup": "geo_name", "from": { "data": { "url": "export_destinations.csv" }, "key": "country", "fields": ["exports"] } },
             { "filter": "datum.exports > 0" },
             { "calculate": "datum.exports / 1000000000", "as": "exports_bil" }
@@ -476,14 +476,11 @@
       }
     };
 
-    // ==========================================
-    // 8. Bubble Scatter (终极爆改：图层逻辑彻底无冲突！)
-    // ==========================================
+    // 8. Bubble Scatter (已修复：去除了致命的除法错误，直接读取 RM Billion)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 450,
       "layer": [
-        // 背景层：45度基准线 (纯粹线条，无数据交互)
         {
           "data": { "values": [{ "x": 0, "y": 0 }, { "x": 230, "y": 230 }] },
           "mark": { "type": "line", "strokeDash": [5, 5], "color": "#94a3b8", "strokeWidth": 2 },
@@ -492,7 +489,6 @@
             "y": { "field": "y", "type": "quantitative" }
           }
         },
-        // 背景层：贸易顺逆差文字 (纯粹文字，无数据交互)
         {
           "data": {
             "values": [
@@ -507,30 +503,22 @@
             "text": { "field": "text", "type": "nominal" }
           }
         },
-        // 主数据层：包裹所有亚洲国家气泡，隔离交互影响！
         {
           "data": {
             "url": "asian_trade_balance.csv",
             "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } }
           },
-          // Params 放在这里！只对包含 country 的数据生效
-          "params": [{
-            "name": "country_select",
-            "select": { "type": "point", "fields": ["country"] },
-            "bind": "legend"
-          }],
+          // 取消图例绑定参数，避免与底图产生任何可能的 Schema 冲突
           "encoding": {
             "x": { "field": "imports", "type": "quantitative", "title": "Imports (RM Billion)", "scale": { "domain": [0, 230] } },
             "y": { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "scale": { "domain": [0, 230] } },
-            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Country (Click to Isolate)" } }
+            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Country" } }
           },
           "layer": [
-            // 子层：圆圈气泡
             {
-              "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5 },
+              "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5, "opacity": 0.8 },
               "encoding": {
                 "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 2500] }, "legend": null },
-                "opacity": { "condition": { "param": "country_select", "value": 0.85 }, "value": 0.1 },
                 "tooltip": [
                   { "field": "country", "title": "Partner" },
                   { "field": "imports", "title": "Imports (RM Bil)", "format": ".1f" },
@@ -539,12 +527,11 @@
                 ]
               }
             },
-            // 子层：国家名称文字 (去掉 avoidMarks 防止严格检查报错，用 dx/dy 控制位置)
             {
+              // 去掉 avoidMarks，直接用 dx/dy 控制防错
               "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 11 },
               "encoding": {
-                "text": { "field": "country", "type": "nominal" },
-                "opacity": { "condition": { "param": "country_select", "value": 1 }, "value": 0.1 }
+                "text": { "field": "country", "type": "nominal" }
               }
             }
           ]
