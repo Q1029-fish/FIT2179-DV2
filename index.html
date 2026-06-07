@@ -480,11 +480,10 @@
       }
     };
 
-    // 8. Bubble Scatter (已修复：增加图例联动过滤 + 标签防遮挡优化)
+    // 8. Bubble Scatter (已修复：彻底解除图层间交互冲突)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container",
-      "height": 400,
+      "width": "container", "height": 400,
       "data": {
         "url": "trade_balance.csv",
         "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } }
@@ -494,7 +493,7 @@
         { "calculate": "datum.exports/1000000000", "as": "exports_bil" },
         { "calculate": "datum.total_trade/1000000000", "as": "trade_bil" }
       ],
-      // 核心交互：绑定图例选择
+      // 将交互参数提升到全局
       "params": [{
         "name": "country_select",
         "select": { "type": "point", "fields": ["country"] },
@@ -502,30 +501,26 @@
       }],
       "encoding": {
         "x": { "field": "imports_bil", "type": "quantitative", "title": "Imports (RM Billion)" },
-        "y": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)" },
-        "size": { "field": "trade_bil", "type": "quantitative", "scale": { "range": [100, 2500] } },
-        "color": {
-          "field": "country",
-          "type": "nominal",
-          "scale": { "scheme": "category10" }
-        },
-        // 核心交互：未选中则透明度降低，解决视觉拥挤
-        "opacity": {
-          "condition": { "param": "country_select", "value": 0.8 },
-          "value": 0.1
-        }
+        "y": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)" }
       },
       "layer": [
-        // 气泡层
-        { "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 } },
-        // 标签层：使用 avoidMarks 防止文字遮挡
+        // 气泡层：绑定颜色和不透明度
+        {
+          "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 },
+          "encoding": {
+            "size": { "field": "trade_bil", "type": "quantitative", "scale": { "range": [100, 2500] } },
+            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" } },
+            "opacity": { "condition": { "param": "country_select", "value": 0.8 }, "value": 0.1 }
+          }
+        },
+        // 标签层：保持独立，不受交互 params 干扰
         {
           "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 10, "avoidMarks": true },
           "encoding": { "text": { "field": "country", "type": "nominal" } }
         },
-        // Tooltip 专用层 (放在最顶层以确保响应最灵敏)
+        // Tooltip 层：明确设置 pointerEvents
         {
-          "mark": { "type": "point", "size": 300, "opacity": 0 },
+          "mark": { "type": "circle", "size": 300, "opacity": 0 },
           "encoding": {
             "tooltip": [
               { "field": "country", "title": "Country" },
