@@ -128,16 +128,6 @@
       justify-content: center;
       align-items: center;
     }
-
-    footer {
-      text-align: center;
-      padding: 50px 20px;
-      color: var(--text-muted);
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9em;
-      border-top: 1px solid #e2e8f0;
-      margin-top: 50px;
-    }
   </style>
 </head>
 
@@ -241,9 +231,27 @@
 
   </div>
 
-  <footer>
-    <p><strong>FIT2179 Data Visualisation 2</strong> | Created by Yuan Qian (ID: 35507292)</p>
-    <p>Data Sources: Department of Statistics Malaysia (DOSM) & UN Comtrade / Global Trade Data.</p>
+  <footer
+    style="margin-top: 60px; padding: 40px 20px; background-color: #f8fafc; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 0.9em; font-family: 'Inter', sans-serif;">
+    <div
+      style="max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px;">
+
+      <div style="flex: 1; min-width: 250px; text-align: left;">
+        <h4 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 700;">Authorship & Metadata</h4>
+        <p style="margin: 4px 0;"><strong>Course:</strong> FIT2179 Data Visualisation 2 (Semester 1, 2026)</p>
+        <p style="margin: 4px 0;"><strong>Author:</strong> Qian Yuan (Student ID: 35507292)</p>
+        <p style="margin: 4px 0;"><strong>Date:</strong> May 2026</p>
+      </div>
+
+      <div style="flex: 1; min-width: 300px; text-align: left;">
+        <h4 style="color: #0f172a; margin-top: 0; margin-bottom: 12px; font-weight: 700;">Data Sources & References</h4>
+        <ul style="margin: 0; padding-left: 20px; line-height: 1.6;">
+          <li>Department of Statistics Malaysia (DOSM). (2026). <em>External Trade Statistics</em>.</li>
+          <li>United Nations Comtrade Database. (2026). <em>International Trade Statistics</em>.</li>
+        </ul>
+      </div>
+
+    </div>
   </footer>
 
   <script>
@@ -448,7 +456,7 @@
       ]
     };
 
-    // 6. 纯净条形图 (已去除TII，回归“看排名”的本质)
+    // 6. 纯净条形图
     var specBar = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container",
@@ -515,9 +523,7 @@
       }
     };
 
-    // ==========================================
-    // 8. Diverging Bar Chart (终极发散条形图：揭示净贸易盈亏)
-    // ==========================================
+    // 8. Diverging Bar Chart (终极发散条形图)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 350,
@@ -526,7 +532,6 @@
         "format": { "type": "csv", "parse": { "imports": "number", "exports": "number" } }
       },
       "transform": [
-        // 计算净贸易额 (Net Trade = Exports - Imports)
         { "calculate": "datum.exports - datum.imports", "as": "net_trade" }
       ],
       "mark": { "type": "bar", "cornerRadiusEnd": 2 },
@@ -535,7 +540,7 @@
           "field": "country",
           "type": "nominal",
           "title": null,
-          "sort": { "field": "net_trade", "order": "descending" }, // 按顺差到逆差排序
+          "sort": { "field": "net_trade", "order": "descending" },
           "axis": { "labelFontWeight": "bold" }
         },
         "x": {
@@ -545,8 +550,8 @@
           "axis": { "grid": true }
         },
         "color": {
-          "condition": { "test": "datum.net_trade > 0", "value": "#2563eb" }, // 顺差为蓝色
-          "value": "#ef4444" // 逆差为红色
+          "condition": { "test": "datum.net_trade > 0", "value": "#2563eb" },
+          "value": "#ef4444"
         },
         "tooltip": [
           { "field": "country", "title": "Partner" },
@@ -582,7 +587,6 @@
         { "calculate": "datum.exports > 10000 ? datum.exports / 1000000000 : datum.exports", "as": "exports_bil" }
       ],
       "vconcat": [
-        // ---------- Part 1: Bar Chart (Click to select category) ----------
         {
           "width": 800, "height": 100,
           "title": {
@@ -602,7 +606,6 @@
             ]
           }
         },
-        // ---------- Part 2: Line Chart (Trend display and shared tooltip) ----------
         {
           "width": 800, "height": 200,
           "title": "Historical Growth Trajectory",
@@ -610,7 +613,6 @@
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } }
           },
           "layer": [
-            // Layer 1: Original line and data points
             {
               "params": [{
                 "name": "hover_line",
@@ -627,7 +629,6 @@
                 }
               }
             },
-            // Layer 2: Vertical reference line and shared tooltip mapped exactly to the CSV data
             {
               "transform": [
                 { "pivot": "product", "value": "exports_bil", "groupby": ["year"] }
@@ -659,11 +660,8 @@
     vegaEmbed('#vis-map-import', specMapImport, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-map-export', specMapExport, { config: hdConfig, actions: false }).catch(console.error);
 
-    // 图 6 变为了纯粹的学术版排序 Bar Chart
     vegaEmbed('#vis-bar', specBar, { config: hdConfig, actions: false }).catch(console.error);
     vegaEmbed('#vis-stacked', specGroupedBar, { config: hdConfig, actions: false }).catch(console.error);
-
-    // 图 8 变为了极其惊艳的 Net Trade 发散条形图 (Diverging Bar)
     vegaEmbed('#vis-scatter', specScatter, { config: hdConfig, actions: false }).catch(console.error);
 
     vegaEmbed('#vis-heatmap', specHeatmap, { config: hdConfig, actions: false }).catch(console.error);
