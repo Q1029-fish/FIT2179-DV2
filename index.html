@@ -476,7 +476,7 @@
       }
     };
 
-    // 8. Bubble Scatter (已修复：去除了致命的除法错误，直接读取 RM Billion)
+    // 8. Bubble Scatter (去标签极简版：依赖悬浮提示和图例交互)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 450,
@@ -508,33 +508,25 @@
             "url": "asian_trade_balance.csv",
             "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } }
           },
-          // 取消图例绑定参数，避免与底图产生任何可能的 Schema 冲突
+          "params": [{
+            "name": "country_select",
+            "select": { "type": "point", "fields": ["country"] },
+            "bind": "legend"
+          }],
+          "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5 },
           "encoding": {
             "x": { "field": "imports", "type": "quantitative", "title": "Imports (RM Billion)", "scale": { "domain": [0, 230] } },
             "y": { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "scale": { "domain": [0, 230] } },
-            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Country" } }
-          },
-          "layer": [
-            {
-              "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5, "opacity": 0.8 },
-              "encoding": {
-                "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 2500] }, "legend": null },
-                "tooltip": [
-                  { "field": "country", "title": "Partner" },
-                  { "field": "imports", "title": "Imports (RM Bil)", "format": ".1f" },
-                  { "field": "exports", "title": "Exports (RM Bil)", "format": ".1f" },
-                  { "field": "total_trade", "title": "Total Trade (RM Bil)", "format": ".1f" }
-                ]
-              }
-            },
-            {
-              // 去掉 avoidMarks，直接用 dx/dy 控制防错
-              "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 11 },
-              "encoding": {
-                "text": { "field": "country", "type": "nominal" }
-              }
-            }
-          ]
+            "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 2500] }, "legend": null },
+            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Country (Click to Isolate)" } },
+            "opacity": { "condition": { "param": "country_select", "value": 0.85 }, "value": 0.1 },
+            "tooltip": [
+              { "field": "country", "title": "Partner" },
+              { "field": "imports", "title": "Imports (RM Bil)", "format": ".1f" },
+              { "field": "exports", "title": "Exports (RM Bil)", "format": ".1f" },
+              { "field": "total_trade", "title": "Total Trade (RM Bil)", "format": ".1f" }
+            ]
+          }
         }
       ]
     };
