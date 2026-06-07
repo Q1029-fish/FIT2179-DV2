@@ -480,71 +480,97 @@
       }
     };
 
-    // 8. Bubble Scatter (已修复：彻底解除图层间交互冲突)
+    // 8. Bubble Scatter (终极爆改：亚洲数据 + 45度顺逆差等值线 + 交互图例防遮挡)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 400,
+      "width": "container", "height": 450,
       "data": {
-        "url": "trade_balance.csv",
+        "url": "asian_trade_balance.csv",
         "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } }
       },
-      "transform": [
-        { "calculate": "datum.imports/1000000000", "as": "imports_bil" },
-        { "calculate": "datum.exports/1000000000", "as": "exports_bil" },
-        { "calculate": "datum.total_trade/1000000000", "as": "trade_bil" }
-      ],
-      // 将交互参数提升到全局
+      // 顶级交互参数：绑定图例
       "params": [{
         "name": "country_select",
         "select": { "type": "point", "fields": ["country"] },
         "bind": "legend"
       }],
-      "encoding": {
-        "x": { "field": "imports_bil", "type": "quantitative", "title": "Imports (RM Billion)" },
-        "y": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)" }
-      },
       "layer": [
-        // 气泡层：绑定颜色和不透明度
+        // 1. 45度贸易平衡线 (背景基准线)
         {
-          "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 },
+          "data": { "values": [{ "x": 0, "y": 0 }, { "x": 230, "y": 230 }] },
+          "mark": { "type": "line", "strokeDash": [5, 5], "color": "#94a3b8", "strokeWidth": 2 },
           "encoding": {
-            "size": { "field": "trade_bil", "type": "quantitative", "scale": { "range": [100, 2500] } },
-            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "category10" } },
-            "opacity": { "condition": { "param": "country_select", "value": 0.8 }, "value": 0.1 }
+            "x": { "field": "x", "type": "quantitative" },
+            "y": { "field": "y", "type": "quantitative" }
           }
         },
-        // 标签层：保持独立，不受交互 params 干扰
+        // 2. 顺逆差背景文字提示
         {
-          "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 10, "avoidMarks": true },
-          "encoding": { "text": { "field": "country", "type": "nominal" } }
-        },
-        // Tooltip 层：明确设置 pointerEvents
-        {
-          "mark": { "type": "circle", "size": 300, "opacity": 0 },
-          "encoding": {
-            "tooltip": [
-              { "field": "country", "title": "Country" },
-              { "field": "imports_bil", "title": "Imports (RM Bil)", "format": ".1f" },
-              { "field": "exports_bil", "title": "Exports (RM Bil)", "format": ".1f" },
-              { "field": "trade_bil", "title": "Total Trade (RM Bil)", "format": ".1f" }
+          "data": {
+            "values": [
+              { "x": 40, "y": 200, "text": "Trade Surplus (Export > Import)" },
+              { "x": 180, "y": 40, "text": "Trade Deficit (Import > Export)" }
             ]
+          },
+          "mark": { "type": "text", "color": "#64748b", "fontSize": 14, "fontWeight": "bold", "opacity": 0.4 },
+          "encoding": {
+            "x": { "field": "x", "type": "quantitative" },
+            "y": { "field": "y", "type": "quantitative" },
+            "text": { "field": "text", "type": "nominal" }
           }
+        },
+        // 3. 气泡与标签层 (共享坐标轴)
+        {
+          "encoding": {
+            // 强制 X 和 Y 的范围一致 (0-230)，保证 45 度线是正斜率
+            "x": { "field": "imports", "type": "quantitative", "title": "Imports (RM Billion)", "scale": { "domain": [0, 230] } },
+            "y": { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "scale": { "domain": [0, 230] } },
+            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Country (Click to Isolate)" } }
+          },
+          "layer": [
+            // 子层 A: 气泡本身
+            {
+              "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5 },
+              "encoding": {
+                "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 2500] }, "legend": null },
+                // 交互逻辑：未选中时透明度降至 0.1
+                "opacity": { "condition": { "param": "country_select", "value": 0.85 }, "value": 0.1 },
+                "tooltip": [
+                  { "field": "country", "title": "Partner" },
+                  { "field": "imports", "title": "Imports (RM Bil)", "format": ".1f" },
+                  { "field": "exports", "title": "Exports (RM Bil)", "format": ".1f" },
+                  { "field": "total_trade", "title": "Total Trade (RM Bil)", "format": ".1f" }
+                ]
+              }
+            },
+            // 子层 B: 国家名称标签 (自带避让算法)
+            {
+              "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 11, "avoidMarks": true },
+              "encoding": {
+                "text": { "field": "country", "type": "nominal" },
+                // 让文字标签跟气泡一起随着点击图例变淡
+                "opacity": { "condition": { "param": "country_select", "value": 1 }, "value": 0.1 }
+              }
+            }
+          ]
         }
       ]
     };
 
-    // 9. Heatmap
+    // 9. Heatmap (已修复：去除了除以10亿的错误计算，直接读取亚洲最新数据)
     var specHeatmap = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
       "width": "container", "height": 200,
-      "data": { "url": "seasonal_heatmap.csv" },
-      "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
+      "data": {
+        "url": "seasonal_heatmap.csv",
+        "format": { "type": "csv", "parse": { "year": "number", "exports": "number" } }
+      },
       "mark": { "type": "rect", "tooltip": true, "cornerRadius": 2 },
       "encoding": {
         "x": { "field": "month", "type": "ordinal", "sort": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"], "title": "Month", "axis": { "labelAngle": 0, "labelAlign": "center", "labelBaseline": "top", "domain": false, "ticks": false } },
         "y": { "field": "year", "type": "ordinal", "title": "Year", "axis": { "domain": false, "ticks": false } },
-        "color": { "field": "exports_bil", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM Billion)", "format": ".1f", "gradientLength": 150 } },
-        "tooltip": [{ "field": "year", "type": "ordinal", "title": "Year" }, { "field": "month", "type": "ordinal", "title": "Month" }, { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }]
+        "color": { "field": "exports", "type": "quantitative", "scale": { "scheme": "oranges" }, "legend": { "title": "Exports (RM Billion)", "format": ".1f", "gradientLength": 150 } },
+        "tooltip": [{ "field": "year", "type": "ordinal", "title": "Year" }, { "field": "month", "type": "ordinal", "title": "Month" }, { "field": "exports", "type": "quantitative", "title": "Exports (RM Billion)", "format": ".1f" }]
       }
     };
 
