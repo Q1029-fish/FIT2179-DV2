@@ -480,64 +480,59 @@
       }
     };
 
-    // 8. 贸易平衡四象限气泡图 (Trade Balance Quadrant Scatter) - 亚洲专属版
+    // 8. Bubble Scatter (已修复：增加图例联动过滤 + 标签防遮挡优化)
     var specScatter = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "width": "container", "height": 450, // 稍微增高一点以容纳图例和标签
+      "width": "container",
+      "height": 400,
       "data": {
-        "url": "asian_trade_balance.csv",
+        "url": "trade_balance.csv",
         "format": { "type": "csv", "parse": { "imports": "number", "exports": "number", "total_trade": "number" } }
       },
+      "transform": [
+        { "calculate": "datum.imports/1000000000", "as": "imports_bil" },
+        { "calculate": "datum.exports/1000000000", "as": "exports_bil" },
+        { "calculate": "datum.total_trade/1000000000", "as": "trade_bil" }
+      ],
+      // 核心交互：绑定图例选择
+      "params": [{
+        "name": "country_select",
+        "select": { "type": "point", "fields": ["country"] },
+        "bind": "legend"
+      }],
+      "encoding": {
+        "x": { "field": "imports_bil", "type": "quantitative", "title": "Imports (RM Billion)" },
+        "y": { "field": "exports_bil", "type": "quantitative", "title": "Exports (RM Billion)" },
+        "size": { "field": "trade_bil", "type": "quantitative", "scale": { "range": [100, 2500] } },
+        "color": {
+          "field": "country",
+          "type": "nominal",
+          "scale": { "scheme": "category10" }
+        },
+        // 核心交互：未选中则透明度降低，解决视觉拥挤
+        "opacity": {
+          "condition": { "param": "country_select", "value": 0.8 },
+          "value": 0.1
+        }
+      },
       "layer": [
-        // 1. 45度贸易平衡等值线 (Trade Parity Line)
+        // 气泡层
+        { "mark": { "type": "circle", "stroke": "black", "strokeWidth": 0.5 } },
+        // 标签层：使用 avoidMarks 防止文字遮挡
         {
-          "data": { "values": [{ "x": 0, "y": 0 }, { "x": 220, "y": 220 }] }, // 刻度映射到最大值
-          "mark": { "type": "line", "strokeDash": [5, 5], "color": "#94a3b8", "strokeWidth": 2 },
-          "encoding": {
-            "x": { "field": "x", "type": "quantitative" },
-            "y": { "field": "y", "type": "quantitative" }
-          }
+          "mark": { "type": "text", "dy": -15, "fontWeight": "bold", "fontSize": 10, "avoidMarks": true },
+          "encoding": { "text": { "field": "country", "type": "nominal" } }
         },
-        // 2. 顺逆差背景文字提示
+        // Tooltip 专用层 (放在最顶层以确保响应最灵敏)
         {
-          "data": {
-            "values": [
-              { "x": 30, "y": 200, "text": "Trade Surplus (Export > Import)" },
-              { "x": 180, "y": 30, "text": "Trade Deficit (Import > Export)" }
-            ]
-          },
-          "mark": { "type": "text", "color": "#64748b", "fontSize": 14, "fontWeight": "bold", "opacity": 0.5, "angle": 0 },
+          "mark": { "type": "point", "size": 300, "opacity": 0 },
           "encoding": {
-            "x": { "field": "x", "type": "quantitative" },
-            "y": { "field": "y", "type": "quantitative" },
-            "text": { "field": "text", "type": "nominal" }
-          }
-        },
-        // 3. 散点气泡层
-        {
-          "mark": { "type": "circle", "stroke": "white", "strokeWidth": 1.5, "opacity": 0.85 },
-          "encoding": {
-            // 锁定X和Y轴相同的范围，这样45度线才是正的
-            "x": { "field": "imports", "type": "quantitative", "title": "Import Value (RM Billion)", "scale": { "domain": [0, 230] } },
-            "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM Billion)", "scale": { "domain": [0, 230] } },
-            "size": { "field": "total_trade", "type": "quantitative", "scale": { "range": [100, 3000] }, "legend": null },
-            "color": { "field": "country", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": null },
             "tooltip": [
-              { "field": "country", "title": "Partner" },
-              { "field": "imports", "title": "Imports (RM Bil)", "format": ".1f" },
-              { "field": "exports", "title": "Exports (RM Bil)", "format": ".1f" },
-              { "field": "total_trade", "title": "Total Trade", "format": ".1f" }
+              { "field": "country", "title": "Country" },
+              { "field": "imports_bil", "title": "Imports (RM Bil)", "format": ".1f" },
+              { "field": "exports_bil", "title": "Exports (RM Bil)", "format": ".1f" },
+              { "field": "trade_bil", "title": "Total Trade (RM Bil)", "format": ".1f" }
             ]
-          }
-        },
-        // 4. 国家名称直接标注在气泡上
-        {
-          "mark": { "type": "text", "dy": -18, "fontWeight": "bold", "fontSize": 11 },
-          "encoding": {
-            "x": { "field": "imports", "type": "quantitative" },
-            "y": { "field": "exports", "type": "quantitative" },
-            "text": { "field": "country", "type": "nominal" },
-            "color": { "value": "#1e293b" }
           }
         }
       ]
