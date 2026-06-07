@@ -551,32 +551,43 @@
       }
     };
 
-    // 10. Dashboard
+    // 10. Deep Dive Dashboard (已适配最新 RM Billion 数据，去除冗余除法运算)
     var specDashboard = {
       "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-      "data": { "url": "product_trends.csv", "format": { "type": "csv", "parse": { "exports": "number" } } },
-      "transform": [{ "calculate": "datum.exports / 1000000000", "as": "exports_bil" }],
+      "data": {
+        "url": "product_trends.csv",
+        "format": { "type": "csv", "parse": { "exports": "number" } }
+      },
       "vconcat": [
         {
           "width": 800, "height": 100, "title": "Total Exports by Product Category (Click to Filter)",
           "params": [{ "name": "category_click", "select": { "type": "point", "fields": ["product"] } }],
           "mark": { "type": "bar", "cursor": "pointer", "cornerRadiusEnd": 4 },
           "encoding": {
-            "x": { "field": "exports_bil", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM Billion)", "axis": { "format": ".1f" } },
-            "y": { "field": "product", "type": "nominal", "sort": { "field": "exports_bil", "op": "sum", "order": "descending" }, "axis": null },
+            // 直接读取 exports，无需转换
+            "x": { "field": "exports", "type": "quantitative", "aggregate": "sum", "title": "Total Exports (RM Billion)", "axis": { "format": ".1f" } },
+            "y": { "field": "product", "type": "nominal", "sort": { "field": "exports", "op": "sum", "order": "descending" }, "axis": null },
             "color": { "condition": { "param": "category_click", "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" } }, "value": "#cbd5e1" },
-            "tooltip": [{ "field": "product", "title": "Category" }, { "field": "exports_bil", "aggregate": "sum", "title": "Total Exports (RM Billion)", "format": ".1f" }]
+            "tooltip": [
+              { "field": "product", "title": "Category" },
+              { "field": "exports", "aggregate": "sum", "title": "Total Exports (RM Billion)", "format": ".1f" }
+            ]
           }
         },
         {
           "width": 800, "height": 200, "title": "Historical Trend (Filtered)",
-          "mark": { "type": "line", "point": { "size": 60, "filled": true } },
+          "mark": { "type": "line", "point": { "size": 60, "filled": true }, "strokeWidth": 3 },
           "encoding": {
             "x": { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year", "axis": { "grid": false } },
-            "y": { "field": "exports_bil", "type": "quantitative", "title": "Export Value (RM Billion)", "axis": { "format": ".1f" } },
+            // 直接读取 exports
+            "y": { "field": "exports", "type": "quantitative", "title": "Export Value (RM Billion)", "axis": { "format": ".1f" }, "scale": { "zero": false } },
             "color": { "field": "product", "type": "nominal", "scale": { "scheme": "tableau10" }, "legend": { "title": "Product Category" } },
             "opacity": { "condition": { "param": "category_click", "value": 1 }, "value": 0.1 },
-            "tooltip": [{ "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" }, { "field": "product", "title": "Category" }, { "field": "exports_bil", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }]
+            "tooltip": [
+              { "field": "year", "type": "temporal", "timeUnit": "year", "title": "Year" },
+              { "field": "product", "title": "Category" },
+              { "field": "exports", "type": "quantitative", "title": "Value (RM Billion)", "format": ".1f" }
+            ]
           }
         }
       ]
